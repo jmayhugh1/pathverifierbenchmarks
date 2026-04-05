@@ -1,3 +1,2 @@
-ipv_doctest 9 0.0007625
-ipv_benchmarking 6 0.00301749
+ipv_benchmarking 1 0.13112
 ---

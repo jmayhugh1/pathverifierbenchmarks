@@ -1,7 +1,7 @@
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
-# file Copyright.txt or https://cmake.org/licensing for details.
+# file LICENSE.rst or https://cmake.org/licensing for details.
 
-cmake_minimum_required(VERSION 3.28.3)
+cmake_minimum_required(VERSION 4.1.2)
 
 # Reject any attempt to use a toolchain file. We must not use one because
 # we could be downloading it here. If the CMAKE_TOOLCHAIN_FILE environment
@@ -18,18 +18,18 @@ project(doctest-populate NONE)
 
 # Pass through things we've already detected in the main project to avoid
 # paying the cost of redetecting them again in ExternalProject_Add()
-set(GIT_EXECUTABLE [==[/usr/bin/git]==])
+set(GIT_EXECUTABLE [==[/opt/homebrew/bin/git]==])
 set(GIT_VERSION_STRING [==[2.43.0]==])
 set_property(GLOBAL PROPERTY _CMAKE_FindGit_GIT_EXECUTABLE_VERSION
-  [==[/usr/bin/git;2.43.0]==]
+  [==[/opt/homebrew/bin/git;2.43.0]==]
 )
 
 
 include(ExternalProject)
 ExternalProject_Add(doctest-populate
-                     "UPDATE_DISCONNECTED" "False" "GIT_REPOSITORY" "https://github.com/doctest/doctest.git" "EXTERNALPROJECT_INTERNAL_ARGUMENT_SEPARATOR" "GIT_TAG" "v2.4.11"
-                    SOURCE_DIR          "/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src"
-                    BINARY_DIR          "/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-build"
+                     "UPDATE_DISCONNECTED" "False" "GIT_REPOSITORY" "https://github.com/doctest/doctest.git" "EXTERNALPROJECT_INTERNAL_ARGUMENT_SEPARATOR" "GIT_TAG" "v2.5.1"
+                    SOURCE_DIR          "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src"
+                    BINARY_DIR          "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build"
                     CONFIGURE_COMMAND   ""
                     BUILD_COMMAND       ""
                     INSTALL_COMMAND     ""

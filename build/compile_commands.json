@@ -1,56 +1,254 @@
 [
 {
-  "directory": "/home/jmayhugh/repos/matrixstuff/build",
-  "command": "/usr/bin/c++   -g -std=gnu++17 -o CMakeFiles/matrixstuff.dir/main.cpp.o -c /home/jmayhugh/repos/matrixstuff/main.cpp",
-  "file": "/home/jmayhugh/repos/matrixstuff/main.cpp",
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build",
+  "command": "/usr/bin/clang++   -g -std=gnu++17 -arch arm64 -o CMakeFiles/matrixstuff.dir/main.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/main.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/main.cpp",
   "output": "CMakeFiles/matrixstuff.dir/main.cpp.o"
 },
 {
-  "directory": "/home/jmayhugh/repos/matrixstuff/build",
-  "command": "/usr/bin/c++   -g -std=gnu++17 -o CMakeFiles/matrixstuff.dir/ipv.cpp.o -c /home/jmayhugh/repos/matrixstuff/ipv.cpp",
-  "file": "/home/jmayhugh/repos/matrixstuff/ipv.cpp",
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build",
+  "command": "/usr/bin/clang++   -g -std=gnu++17 -arch arm64 -o CMakeFiles/matrixstuff.dir/ipv.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/ipv.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/ipv.cpp",
   "output": "CMakeFiles/matrixstuff.dir/ipv.cpp.o"
 },
 {
-  "directory": "/home/jmayhugh/repos/matrixstuff/build",
-  "command": "/usr/bin/c++  -I/home/jmayhugh/repos/matrixstuff -I/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src -g -std=gnu++17 -o CMakeFiles/matrixstuff_tests.dir/tests/doctest_main.cpp.o -c /home/jmayhugh/repos/matrixstuff/tests/doctest_main.cpp",
-  "file": "/home/jmayhugh/repos/matrixstuff/tests/doctest_main.cpp",
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build",
+  "command": "/usr/bin/clang++  -I/Users/joshuamayhugh/Projects/pathverifierbenchmarks -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++17 -arch arm64 -o CMakeFiles/matrixstuff_tests.dir/tests/doctest_main.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/tests/doctest_main.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/tests/doctest_main.cpp",
   "output": "CMakeFiles/matrixstuff_tests.dir/tests/doctest_main.cpp.o"
 },
 {
-  "directory": "/home/jmayhugh/repos/matrixstuff/build",
-  "command": "/usr/bin/c++  -I/home/jmayhugh/repos/matrixstuff -I/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src -g -std=gnu++17 -o CMakeFiles/matrixstuff_tests.dir/tests/ipv_doctest.cpp.o -c /home/jmayhugh/repos/matrixstuff/tests/ipv_doctest.cpp",
-  "file": "/home/jmayhugh/repos/matrixstuff/tests/ipv_doctest.cpp",
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build",
+  "command": "/usr/bin/clang++  -I/Users/joshuamayhugh/Projects/pathverifierbenchmarks -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++17 -arch arm64 -o CMakeFiles/matrixstuff_tests.dir/tests/ipv_doctest.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/tests/ipv_doctest.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/tests/ipv_doctest.cpp",
   "output": "CMakeFiles/matrixstuff_tests.dir/tests/ipv_doctest.cpp.o"
 },
 {
-  "directory": "/home/jmayhugh/repos/matrixstuff/build",
-  "command": "/usr/bin/c++  -I/home/jmayhugh/repos/matrixstuff -I/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src -g -std=gnu++17 -o CMakeFiles/matrixstuff_tests.dir/ipv.cpp.o -c /home/jmayhugh/repos/matrixstuff/ipv.cpp",
-  "file": "/home/jmayhugh/repos/matrixstuff/ipv.cpp",
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build",
+  "command": "/usr/bin/clang++  -I/Users/joshuamayhugh/Projects/pathverifierbenchmarks -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++17 -arch arm64 -o CMakeFiles/matrixstuff_tests.dir/ipv.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/ipv.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/ipv.cpp",
   "output": "CMakeFiles/matrixstuff_tests.dir/ipv.cpp.o"
 },
 {
-  "directory": "/home/jmayhugh/repos/matrixstuff/build",
-  "command": "/usr/bin/c++  -I/home/jmayhugh/repos/matrixstuff -I/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src -g -std=gnu++17 -o CMakeFiles/matrixstuff_benchmarking.dir/tests/doctest_main.cpp.o -c /home/jmayhugh/repos/matrixstuff/tests/doctest_main.cpp",
-  "file": "/home/jmayhugh/repos/matrixstuff/tests/doctest_main.cpp",
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build",
+  "command": "/usr/bin/clang++  -I/Users/joshuamayhugh/Projects/pathverifierbenchmarks -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++17 -arch arm64 -o CMakeFiles/matrixstuff_benchmarking.dir/tests/doctest_main.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/tests/doctest_main.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/tests/doctest_main.cpp",
   "output": "CMakeFiles/matrixstuff_benchmarking.dir/tests/doctest_main.cpp.o"
 },
 {
-  "directory": "/home/jmayhugh/repos/matrixstuff/build",
-  "command": "/usr/bin/c++  -I/home/jmayhugh/repos/matrixstuff -I/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src -g -std=gnu++17 -o CMakeFiles/matrixstuff_benchmarking.dir/tests/ipv_benchmarking.cpp.o -c /home/jmayhugh/repos/matrixstuff/tests/ipv_benchmarking.cpp",
-  "file": "/home/jmayhugh/repos/matrixstuff/tests/ipv_benchmarking.cpp",
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build",
+  "command": "/usr/bin/clang++  -I/Users/joshuamayhugh/Projects/pathverifierbenchmarks -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++17 -arch arm64 -o CMakeFiles/matrixstuff_benchmarking.dir/tests/ipv_benchmarking.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/tests/ipv_benchmarking.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/tests/ipv_benchmarking.cpp",
   "output": "CMakeFiles/matrixstuff_benchmarking.dir/tests/ipv_benchmarking.cpp.o"
 },
 {
-  "directory": "/home/jmayhugh/repos/matrixstuff/build",
-  "command": "/usr/bin/c++  -I/home/jmayhugh/repos/matrixstuff -I/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src -g -std=gnu++17 -o CMakeFiles/matrixstuff_benchmarking.dir/ipv.cpp.o -c /home/jmayhugh/repos/matrixstuff/ipv.cpp",
-  "file": "/home/jmayhugh/repos/matrixstuff/ipv.cpp",
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build",
+  "command": "/usr/bin/clang++  -I/Users/joshuamayhugh/Projects/pathverifierbenchmarks -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++17 -arch arm64 -o CMakeFiles/matrixstuff_benchmarking.dir/ipv.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/ipv.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/ipv.cpp",
   "output": "CMakeFiles/matrixstuff_benchmarking.dir/ipv.cpp.o"
 },
 {
-  "directory": "/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-build",
-  "command": "/usr/bin/c++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -I/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src -g -std=gnu++11 -o CMakeFiles/doctest_with_main.dir/doctest/parts/doctest.cpp.o -c /home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src/doctest/parts/doctest.cpp",
-  "file": "/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src/doctest/parts/doctest.cpp",
-  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/doctest.cpp.o"
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/assert/data.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/assert/data.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/assert/data.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/assert/data.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/assert/expression.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/assert/expression.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/assert/expression.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/assert/expression.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/assert/handler.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/assert/handler.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/assert/handler.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/assert/handler.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/assert/message.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/assert/message.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/assert/message.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/assert/message.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/assert/result.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/assert/result.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/assert/result.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/assert/result.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/assert/type.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/assert/type.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/assert/type.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/assert/type.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/color.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/color.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/color.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/color.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/context.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/context.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/context.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/context.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/context/options.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/context/options.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/context/options.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/context/options.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/context_scope.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/context_scope.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/context_scope.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/context_scope.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/context_state.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/context_state.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/context_state.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/context_state.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/debugger.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/debugger.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/debugger.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/debugger.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/exception_translator.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/exception_translator.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/exception_translator.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/exception_translator.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/exceptions.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/exceptions.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/exceptions.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/exceptions.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/filters.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/filters.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/filters.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/filters.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/main.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/main.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/main.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/main.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/matchers/approx.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/matchers/approx.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/matchers/approx.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/matchers/approx.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/matchers/contains.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/matchers/contains.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/matchers/contains.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/matchers/contains.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/matchers/is_nan.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/matchers/is_nan.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/matchers/is_nan.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/matchers/is_nan.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/path.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/path.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/path.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/path.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/traversal.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/traversal.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/traversal.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/traversal.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/reporter.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/reporter.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/reporter.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/reporter.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/reporters/common.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/reporters/common.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/reporters/common.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/reporters/common.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/reporters/console.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/reporters/console.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/reporters/console.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/reporters/console.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/reporters/debug_output_window.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/reporters/debug_output_window.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/reporters/debug_output_window.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/reporters/debug_output_window.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/reporters/junit.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/reporters/junit.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/reporters/junit.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/reporters/junit.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/reporters/xml.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/reporters/xml.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/reporters/xml.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/reporters/xml.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/signals.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/signals.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/signals.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/signals.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/string.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/string.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/string.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/string.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/subcase.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/subcase.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/subcase.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/subcase.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/test_case.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/test_case.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/test_case.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/test_case.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/test_suite.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/test_suite.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/test_suite.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/test_suite.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/timer.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/timer.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/timer.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/timer.cpp.o"
+},
+{
+  "directory": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-build",
+  "command": "/usr/bin/clang++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src -isystem /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest -g -std=gnu++11 -arch arm64 -o CMakeFiles/doctest_with_main.dir/doctest/parts/private/xml.cpp.o -c /Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/xml.cpp",
+  "file": "/Users/joshuamayhugh/Projects/pathverifierbenchmarks/build/_deps/doctest-src/doctest/parts/private/xml.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/private/xml.cpp.o"
 }
 ]
