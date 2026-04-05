@@ -19,7 +19,7 @@ Map randomMap(size_t num_vertices, size_t num_edges, std::mt19937 &rng,
 Map randomMap(size_t num_vertices, size_t num_edges);
 
 /// H(p) = -p log2(p) - (1-p) log2(1-p); returns 0 at the boundaries.
-float binary_entropy(float p);
+double binary_entropy(double p);
 
 /// Sum of per-edge binary entropies — total uncertainty assuming independence.
-float total_entropy(const pMatrix &p);
+double total_entropy(const pMatrix &p);

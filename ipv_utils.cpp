@@ -53,16 +53,16 @@ Map randomMap(size_t num_vertices, size_t num_edges) {
   return randomMap(num_vertices, num_edges, rng);
 }
 
-float binary_entropy(float p) {
+double binary_entropy(double p) {
   if (p <= 0.f || p >= 1.f) {
     return 0.f;
   }
   return -(p * std::log2(p) + (1.f - p) * std::log2(1.f - p));
 }
 
-float total_entropy(const pMatrix &p) {
-  float sum = 0.f;
-  for (float x : p) {
+double total_entropy(const pMatrix &p) {
+  double sum = 0.f;
+  for (double x : p) {
     sum += binary_entropy(x);
   }
   return sum;

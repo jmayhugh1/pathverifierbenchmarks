@@ -10,25 +10,26 @@
 TEST_CASE(
     "benchmark approximateIpv vs exactIpv — 20 iterations, chrono timed") {
   constexpr int k_iters = 20;
-  constexpr size_t k_vertices = 5;
-  constexpr size_t k_edges = 12;
+  constexpr size_t k_vertices = 10;
+  constexpr size_t k_edges = 25;
   constexpr unsigned k_seed = 42;
 
   std::mt19937 rng(k_seed);
   const Map map = randomMap(k_vertices, k_edges, rng, 0.25);
-  const pMatrix priors(k_edges, 0.3f);
+  const double prior = 0.5;
+  const pMatrix priors(k_edges, prior);
 
-  approximateIpv approx(map, 0.3f);
+  approximateIpv approx(map, prior);
   exactIpv exact(map, priors);
 
   std::cout << std::fixed << std::setprecision(6);
   std::cout << "iter phase      safe  ig_bits  microseconds\n";
   std::cout << "---- ---------- ---- -------- -------------\n";
-  float avg_time_a = 0.0f;
-  float avg_time_e = 0.0f;
+  double avg_time_a = 0.0;
+  double avg_time_e = 0.0;
 
-  float avg_ig_a = 0.0f;
-  float avg_ig_e = 0.0f;
+  double avg_ig_a = 0.0;
+  double avg_ig_e = 0.0;
 
   for (int i = 0; i < k_iters; ++i) {
     const Path path = randomPath(k_edges, rng, 0.35);
@@ -64,7 +65,6 @@ TEST_CASE(
               << std::setw(8) << ig_e << ' ' << std::setw(13) << us_e << '\n';
   }
 
-
   avg_time_a /= k_iters;
   avg_time_e /= k_iters;
   avg_ig_a /= k_iters;
@@ -74,5 +74,4 @@ TEST_CASE(
   std::cout << "avg TIME exact       " << std::setw(4) << avg_time_e << '\n';
   std::cout << "avg IG approximate " << std::setw(4) << avg_ig_a << '\n';
   std::cout << "avg IG exact       " << std::setw(4) << avg_ig_e << '\n';
-  
 }

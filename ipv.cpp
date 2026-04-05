@@ -7,12 +7,12 @@
 #include <stdexcept>
 #include <utility>
 
-approximateIpv::approximateIpv(Map map, float prior) : ipv(std::move(map)) {
+approximateIpv::approximateIpv(Map map, double prior) : ipv(std::move(map)) {
   pmat.assign(num_edges, prior);
   confirmed_safe_.assign(num_edges, false);
 }
 
-std::tuple<bool, float> approximateIpv::informationGain(Path path) {
+std::tuple<bool, double> approximateIpv::informationGain(Path path) {
   assert(path.size() == num_edges);
 
   for (size_t i = 0; i < num_edges; ++i) {
@@ -21,21 +21,21 @@ std::tuple<bool, float> approximateIpv::informationGain(Path path) {
     }
   }
 
-  const float h_before = total_entropy(pmat);
+  const double h_before = total_entropy(pmat);
 
   const bool safe = !collision(path);
 
-  float p_all_safe = 1.f;
+  double p_all_safe = 1.f;
   for (size_t i = 0; i < num_edges; ++i) {
     if (confirmed_safe_[i]) {
       continue;
     }
-    const float m = path[i] ? 1.f : 0.f;
+    const double m = path[i] ? 1.f : 0.f;
     p_all_safe *= (1.f - m * pmat[i]);
   }
-  const float p_unsafe = 1.f - p_all_safe;
+  const double p_unsafe = 1.f - p_all_safe;
 
-  float alpha = 0.f;
+  double alpha = 0.f;
   if (!safe) {
     alpha = 1.f / std::max(p_unsafe, ipv::eps);
   }
@@ -44,9 +44,9 @@ std::tuple<bool, float> approximateIpv::informationGain(Path path) {
     if (confirmed_safe_[i]) {
       continue;
     }
-    const float m = path[i] ? 1.f : 0.f;
-    float pi = (1.f - m) * pmat[i] + m * (alpha * pmat[i]);
-    pmat[i] = std::clamp(pi, 0.f, 1.f);
+    const double m = path[i] ? 1.f : 0.f;
+    double pi = (1.f - m) * pmat[i] + m * (alpha * pmat[i]);
+    pmat[i] = std::clamp(pi, static_cast<double>(0), static_cast<double>(1));
   }
 
   if (safe) {
@@ -58,8 +58,8 @@ std::tuple<bool, float> approximateIpv::informationGain(Path path) {
     }
   }
 
-  const float h_after = total_entropy(pmat);
-  const float ig = h_before - h_after;
+  const double h_after = total_entropy(pmat);
+  const double ig = h_before - h_after;
   return {safe, ig};
 }
 
@@ -175,18 +175,18 @@ double exactIpv::expectedInformationGain(const Path &path) const {
   return binaryEntropy(predictiveCollisionProb(path));
 }
 
-std::tuple<bool, float> exactIpv::informationGain(Path path) {
+std::tuple<bool, double> exactIpv::informationGain(Path path) {
   std::vector<double> prior_marginals = this->marginals();
   observe(path, collision(path));
   const std::vector<double> marginals = this->marginals();
   const bool safe = !collision(path);
-  float h_before = 0.0;
-  float h_after = 0.0;
+  double h_before = 0.0;
+  double h_after = 0.0;
   for (size_t i = 0; i < edges_; ++i) {
     h_before += binaryEntropy(prior_marginals[i]);
     h_after += binaryEntropy(marginals[i]);
   }
-  const float realized = h_before - h_after;
+  const double realized = h_before - h_after;
   return {safe, realized};
 }
 

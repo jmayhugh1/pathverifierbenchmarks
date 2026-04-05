@@ -28,7 +28,10 @@ TEST_CASE("informationGain returns safe=false on obstruction") {
 }
 
 TEST_CASE("exactIpv five-edge joint update marginals") {
-  Map truth = {{0, 1, false}, {1, 2, false}, {2, 3, false}, {3, 4, false},
+  Map truth = {{0, 1, false},
+               {1, 2, false},
+               {2, 3, false},
+               {3, 4, false},
                {4, 5, false}};
   exactIpv solver(truth, pMatrix(5, 0.2f));
   solver.observe(Path{true, true, true, false, false}, true);
@@ -43,43 +46,45 @@ TEST_CASE("exactIpv five-edge joint update marginals") {
   CHECK(m[4] == doctest::Approx(9.0 / 29.0));
 }
 
-TEST_CASE("exactIpv expectedInformationGain is binary entropy of predictive collision") {
+TEST_CASE("exactIpv expectedInformationGain is binary entropy of predictive "
+          "collision") {
   Map truth = {{0, 0, false}, {0, 1, false}};
   exactIpv solver(truth, pMatrix(2, 0.5f));
   Path q = {true, false};
   const double p = solver.predictiveCollisionProb(q);
-  CHECK(solver.expectedInformationGain(q) == doctest::Approx(
-            -p * std::log2(p) - (1.0 - p) * std::log2(1.0 - p)));
+  CHECK(solver.expectedInformationGain(q) ==
+        doctest::Approx(-p * std::log2(p) - (1.0 - p) * std::log2(1.0 - p)));
 }
 
 TEST_CASE("approximateIpv informationGain mutates edge beliefs") {
   Map m = {{0, 0, false}, {0, 1, true}};
   approximateIpv sim(m, 0.5f);
-  CHECK(sim.edgeBeliefs()[0] == doctest::Approx(0.5f));
-  CHECK(sim.edgeBeliefs()[1] == doctest::Approx(0.5f));
+  CHECK(sim.marginals()[0] == doctest::Approx(0.5f));
+  CHECK(sim.marginals()[1] == doctest::Approx(0.5f));
 
   sim.informationGain(Path{false, true});
 
-  CHECK(sim.edgeBeliefs()[0] == doctest::Approx(0.5f));
-  CHECK(sim.edgeBeliefs()[1] == doctest::Approx(1.0f));
+  CHECK(sim.marginals()[0] == doctest::Approx(0.5f));
+  CHECK(sim.marginals()[1] == doctest::Approx(1.0f));
 }
 
-TEST_CASE("approximateIpv safe observation zeros beliefs on queried edges only") {
+TEST_CASE(
+    "approximateIpv safe observation zeros beliefs on queried edges only") {
   Map m = {{0, 0, false}, {0, 1, false}};
   approximateIpv sim(m, 0.5f);
   sim.informationGain(Path{true, false});
-  CHECK(sim.edgeBeliefs()[0] == doctest::Approx(0.0f));
-  CHECK(sim.edgeBeliefs()[1] == doctest::Approx(0.5f));
+  CHECK(sim.marginals()[0] == doctest::Approx(0.0f));
+  CHECK(sim.marginals()[1] == doctest::Approx(0.5f));
 }
 
 TEST_CASE("approximateIpv confirmed-safe edges stay zero after later updates") {
   Map m = {{0, 0, false}, {0, 1, true}};
   approximateIpv sim(m, 0.5f);
   sim.informationGain(Path{true, false});
-  CHECK(sim.edgeBeliefs()[0] == doctest::Approx(0.f));
+  CHECK(sim.marginals()[0] == doctest::Approx(0.f));
   sim.informationGain(Path{true, true});
-  CHECK(sim.edgeBeliefs()[0] == doctest::Approx(0.f));
-  CHECK(sim.edgeBeliefs()[1] > 0.f);
+  CHECK(sim.marginals()[0] == doctest::Approx(0.f));
+  CHECK(sim.marginals()[1] > 0.f);
 }
 
 TEST_CASE("exactIpv informationGain mutates posterior and marginals") {
@@ -101,7 +106,8 @@ TEST_CASE("exactIpv informationGain mutates posterior and marginals") {
   CHECK(sim.posterior()[0] != doctest::Approx(p0_before));
 }
 
-TEST_CASE("exactIpv observe safe leaves only states with no hazard on queried edges") {
+TEST_CASE("exactIpv observe safe leaves only states with no hazard on queried "
+          "edges") {
   Map m = {{0, 1, false}};
   exactIpv sim(m, pMatrix{0.4f});
   sim.observe(Path{true}, false);

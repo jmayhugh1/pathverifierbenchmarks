@@ -18,7 +18,7 @@ using Path = std::vector<bool>;
 
 // One prior hazard probability per edge (used by approximate / exact
 // constructors).
-using pMatrix = std::vector<float>;
+using pMatrix = std::vector<double>;
 
 class ipv {
 private:
@@ -27,7 +27,7 @@ private:
 protected:
   /// Number of edges |E| (path length); not |V|.
   size_t num_edges;
-  static constexpr float eps = 1e-12f;
+  static constexpr double eps = 1e-12f;
 
   explicit ipv(Map map) : map(std::move(map)) { num_edges = this->map.size(); }
 
@@ -35,7 +35,7 @@ public:
   virtual ~ipv() = default;
   /// Returns (safe, information_gain_bits): safe iff no queried edge is
   /// obstructed.
-  virtual std::tuple<bool, float> informationGain(Path path) = 0;
+  virtual std::tuple<bool, double> informationGain(Path path) = 0;
 
   /// True iff some queried edge is obstructed in the hidden map (∨_i m_i ∧
   /// Z_i).
@@ -58,16 +58,16 @@ class approximateIpv : public ipv {
 public:
   /// Construct with a ground-truth map and a uniform prior hazard probability
   /// per edge (default 0.5).
-  explicit approximateIpv(Map map, float prior = 0.5f);
+  explicit approximateIpv(Map map, double prior = 0.5f);
 
   /// Simulate traversing @p path against the hidden map.  On collision the
   /// queried-edge beliefs are scaled up (Bayesian-like conditioning on at
   /// least one hazard); on safe passage the queried edges are zeroed and
   /// permanently locked.  Returns (safe, realized_information_gain_bits).
-  std::tuple<bool, float> informationGain(Path path) override;
+  std::tuple<bool, double> informationGain(Path path) override;
   /// Current marginal hazard beliefs P(Z_i=1) per edge (updated by
   /// informationGain).
-  const pMatrix &edgeBeliefs() const { return pmat; }
+  std::vector<double> marginals() const { return pmat; };
 };
 
 /// Full joint over hazard bitmasks Z ∈ {0,1}^{|E|}: eliminate inconsistent
@@ -123,7 +123,7 @@ public:
 
   /// Traverse @p path against the hidden map, condition the posterior on the
   /// outcome, and return (safe, realized_information_gain_bits).
-  std::tuple<bool, float> informationGain(Path path) override;
+  std::tuple<bool, double> informationGain(Path path) override;
 
   /// Marginal hazard probabilities P(Z_i = 1) for each edge under the current
   /// posterior.
