@@ -1,5 +1,4 @@
 #include "ipv_utils.h"
-
 #include <stdexcept>
 
 Path randomPath(size_t num_edges, std::mt19937 &rng, double p_query) {
