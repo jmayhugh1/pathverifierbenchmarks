@@ -176,14 +176,18 @@ double exactIpv::expectedInformationGain(const Path &path) const {
 }
 
 std::tuple<bool, float> exactIpv::informationGain(Path path) {
-  const uint64_t query_mask = pathToMask(path);
-  const double h_before = entropyBits(posterior_);
-  const bool observed_collision = collision(path);
-  observeMask(query_mask, observed_collision);
-  const double h_after = entropyBits(posterior_);
-  const double realized = h_before - h_after;
-  const bool safe = !observed_collision;
-  return {safe, static_cast<float>(realized)};
+  std::vector<double> prior_marginals = this->marginals();
+  observe(path, collision(path));
+  const std::vector<double> marginals = this->marginals();
+  const bool safe = !collision(path);
+  float h_before = 0.0;
+  float h_after = 0.0;
+  for (size_t i = 0; i < edges_; ++i) {
+    h_before += binaryEntropy(prior_marginals[i]);
+    h_after += binaryEntropy(marginals[i]);
+  }
+  const float realized = h_before - h_after;
+  return {safe, realized};
 }
 
 std::vector<double> exactIpv::marginals() const {
