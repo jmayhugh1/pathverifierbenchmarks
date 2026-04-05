@@ -1,8 +1,8 @@
+#pragma once
+
 #include <cassert>
-#include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <random>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -19,19 +19,6 @@ using Path = std::vector<bool>;
 // One prior hazard probability per edge (used by approximate / exact
 // constructors).
 using pMatrix = std::vector<float>;
-
-/// Bernoulli mask over edges; each bit true with probability `p_query` (default
-/// 0.5).
-Path randomPath(size_t num_edges, std::mt19937 &rng, double p_query = 0.5);
-Path randomPath(size_t num_edges);
-
-/// `num_edges` distinct directed edges with endpoints in [0, num_vertices);
-/// each obstructed independently with probability `hazard_p` (default 0.2).
-/// Uses all n² ordered pairs; throws if num_edges > num_vertices *
-/// num_vertices.
-Map randomMap(size_t num_vertices, size_t num_edges, std::mt19937 &rng,
-              double hazard_p = 0.2);
-Map randomMap(size_t num_vertices, size_t num_edges);
 
 class ipv {
 private:

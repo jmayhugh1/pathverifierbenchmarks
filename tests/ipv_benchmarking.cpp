@@ -5,7 +5,7 @@
 #include <iostream>
 #include <random>
 
-#include "ipv.h"
+#include "ipv_utils.h"
 
 TEST_CASE(
     "benchmark approximateIpv vs exactIpv — 20 iterations, chrono timed") {
