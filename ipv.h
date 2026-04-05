@@ -56,7 +56,14 @@ class approximateIpv : public ipv {
   std::vector<bool> confirmed_safe_;
 
 public:
+  /// Construct with a ground-truth map and a uniform prior hazard probability
+  /// per edge (default 0.5).
   explicit approximateIpv(Map map, float prior = 0.5f);
+
+  /// Simulate traversing @p path against the hidden map.  On collision the
+  /// queried-edge beliefs are scaled up (Bayesian-like conditioning on at
+  /// least one hazard); on safe passage the queried edges are zeroed and
+  /// permanently locked.  Returns (safe, realized_information_gain_bits).
   std::tuple<bool, float> informationGain(Path path) override;
   /// Current marginal hazard beliefs P(Z_i=1) per edge (updated by
   /// informationGain).
@@ -73,22 +80,53 @@ private:
   size_t edges_;
   static constexpr double kEps = 1e-12;
 
+  /// Shannon entropy H(dist) in bits over an arbitrary discrete distribution.
   static double entropyBits(const std::vector<double> &dist);
+
+  /// H(p) = -p log2(p) - (1-p) log2(1-p); returns 0 at the boundaries.
   static double binaryEntropy(double p);
+
+  /// Convert a bool-vector path to a compact bitmask (bit i set ⟺ path[i]).
   uint64_t pathToMask(const Path &path) const;
+
+  /// True iff @p state is consistent with the observation: for a collision the
+  /// state must have at least one hazard bit under @p query_mask; for safe
+  /// passage it must have none.
   static bool consistent(uint64_t state, uint64_t query_mask,
                          bool observed_collision);
+
+  /// Renormalize posterior_ to sum to 1; throws if total mass is ~0.
   void normalize();
+
+  /// P(collision | query_mask) = Σ_{s: s ∧ mask ≠ 0} posterior_[s].
   double predictiveCollisionProbMask(uint64_t query_mask) const;
+
+  /// Zero out posterior entries inconsistent with the observation, then
+  /// renormalize.
   void observeMask(uint64_t query_mask, bool observed_collision);
 
 public:
+  /// Build the full 2^|E| joint from independent per-edge priors and
+  /// normalize.  Throws if |E| > 62 (bitmask overflow).
   explicit exactIpv(Map map, const pMatrix &priors);
 
+  /// Condition the posterior on a traversal outcome (collision or safe).
   void observe(const Path &path, bool observed_collision);
+
+  /// Predictive probability of collision for a candidate path under the
+  /// current posterior.
   double predictiveCollisionProb(const Path &path) const;
+
+  /// Binary entropy of the predictive collision probability — an upper bound
+  /// on the expected information gain from traversing @p path.
   double expectedInformationGain(const Path &path) const;
+
+  /// Traverse @p path against the hidden map, condition the posterior on the
+  /// outcome, and return (safe, realized_information_gain_bits).
   std::tuple<bool, float> informationGain(Path path) override;
+
+  /// Marginal hazard probabilities P(Z_i = 1) for each edge under the current
+  /// posterior.
   std::vector<double> marginals() const;
   const std::vector<double> &posterior() const { return posterior_; }
 };
