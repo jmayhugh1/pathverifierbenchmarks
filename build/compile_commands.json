@@ -1,0 +1,56 @@
+[
+{
+  "directory": "/home/jmayhugh/repos/matrixstuff/build",
+  "command": "/usr/bin/c++   -g -std=gnu++17 -o CMakeFiles/matrixstuff.dir/main.cpp.o -c /home/jmayhugh/repos/matrixstuff/main.cpp",
+  "file": "/home/jmayhugh/repos/matrixstuff/main.cpp",
+  "output": "CMakeFiles/matrixstuff.dir/main.cpp.o"
+},
+{
+  "directory": "/home/jmayhugh/repos/matrixstuff/build",
+  "command": "/usr/bin/c++   -g -std=gnu++17 -o CMakeFiles/matrixstuff.dir/ipv.cpp.o -c /home/jmayhugh/repos/matrixstuff/ipv.cpp",
+  "file": "/home/jmayhugh/repos/matrixstuff/ipv.cpp",
+  "output": "CMakeFiles/matrixstuff.dir/ipv.cpp.o"
+},
+{
+  "directory": "/home/jmayhugh/repos/matrixstuff/build",
+  "command": "/usr/bin/c++  -I/home/jmayhugh/repos/matrixstuff -I/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src -g -std=gnu++17 -o CMakeFiles/matrixstuff_tests.dir/tests/doctest_main.cpp.o -c /home/jmayhugh/repos/matrixstuff/tests/doctest_main.cpp",
+  "file": "/home/jmayhugh/repos/matrixstuff/tests/doctest_main.cpp",
+  "output": "CMakeFiles/matrixstuff_tests.dir/tests/doctest_main.cpp.o"
+},
+{
+  "directory": "/home/jmayhugh/repos/matrixstuff/build",
+  "command": "/usr/bin/c++  -I/home/jmayhugh/repos/matrixstuff -I/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src -g -std=gnu++17 -o CMakeFiles/matrixstuff_tests.dir/tests/ipv_doctest.cpp.o -c /home/jmayhugh/repos/matrixstuff/tests/ipv_doctest.cpp",
+  "file": "/home/jmayhugh/repos/matrixstuff/tests/ipv_doctest.cpp",
+  "output": "CMakeFiles/matrixstuff_tests.dir/tests/ipv_doctest.cpp.o"
+},
+{
+  "directory": "/home/jmayhugh/repos/matrixstuff/build",
+  "command": "/usr/bin/c++  -I/home/jmayhugh/repos/matrixstuff -I/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src -g -std=gnu++17 -o CMakeFiles/matrixstuff_tests.dir/ipv.cpp.o -c /home/jmayhugh/repos/matrixstuff/ipv.cpp",
+  "file": "/home/jmayhugh/repos/matrixstuff/ipv.cpp",
+  "output": "CMakeFiles/matrixstuff_tests.dir/ipv.cpp.o"
+},
+{
+  "directory": "/home/jmayhugh/repos/matrixstuff/build",
+  "command": "/usr/bin/c++  -I/home/jmayhugh/repos/matrixstuff -I/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src -g -std=gnu++17 -o CMakeFiles/matrixstuff_benchmarking.dir/tests/doctest_main.cpp.o -c /home/jmayhugh/repos/matrixstuff/tests/doctest_main.cpp",
+  "file": "/home/jmayhugh/repos/matrixstuff/tests/doctest_main.cpp",
+  "output": "CMakeFiles/matrixstuff_benchmarking.dir/tests/doctest_main.cpp.o"
+},
+{
+  "directory": "/home/jmayhugh/repos/matrixstuff/build",
+  "command": "/usr/bin/c++  -I/home/jmayhugh/repos/matrixstuff -I/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src -g -std=gnu++17 -o CMakeFiles/matrixstuff_benchmarking.dir/tests/ipv_benchmarking.cpp.o -c /home/jmayhugh/repos/matrixstuff/tests/ipv_benchmarking.cpp",
+  "file": "/home/jmayhugh/repos/matrixstuff/tests/ipv_benchmarking.cpp",
+  "output": "CMakeFiles/matrixstuff_benchmarking.dir/tests/ipv_benchmarking.cpp.o"
+},
+{
+  "directory": "/home/jmayhugh/repos/matrixstuff/build",
+  "command": "/usr/bin/c++  -I/home/jmayhugh/repos/matrixstuff -I/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src -g -std=gnu++17 -o CMakeFiles/matrixstuff_benchmarking.dir/ipv.cpp.o -c /home/jmayhugh/repos/matrixstuff/ipv.cpp",
+  "file": "/home/jmayhugh/repos/matrixstuff/ipv.cpp",
+  "output": "CMakeFiles/matrixstuff_benchmarking.dir/ipv.cpp.o"
+},
+{
+  "directory": "/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-build",
+  "command": "/usr/bin/c++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -I/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src -g -std=gnu++11 -o CMakeFiles/doctest_with_main.dir/doctest/parts/doctest.cpp.o -c /home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src/doctest/parts/doctest.cpp",
+  "file": "/home/jmayhugh/repos/matrixstuff/build/_deps/doctest-src/doctest/parts/doctest.cpp",
+  "output": "_deps/doctest-build/CMakeFiles/doctest_with_main.dir/doctest/parts/doctest.cpp.o"
+}
+]

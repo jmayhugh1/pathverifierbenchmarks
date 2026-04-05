@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Site BuildName="(empty)"
+	BuildStamp="20260403-2049-Experimental"
+	Name="(empty)"
+	Generator="ctest-3.28.3"
+	CompilerName=""
+	CompilerVersion=""
+	OSName="Linux"
+	Hostname="jmayhugh-To-Be-Filled-By-O-E-M"
+	OSRelease="6.17.0-19-generic"
+	OSVersion="#19~24.04.2-Ubuntu SMP PREEMPT_DYNAMIC Fri Mar  6 23:08:46 UTC 2"
+	OSPlatform="x86_64"
+	Is64Bits="1"
+	VendorString="AuthenticAMD"
+	VendorID="Advanced Micro Devices"
+	FamilyID="25"
+	ModelID="97"
+	ProcessorCacheSize="1024"
+	NumberOfLogicalCPU="16"
+	NumberOfPhysicalCPU="8"
+	TotalVirtualMemory="8191"
+	TotalPhysicalMemory="31241"
+	LogicalProcessorsPerPhysical="2"
+	ProcessorClockFrequency="4823.71"
+	>
+	<Testing>
+		<StartDateTime>Apr 03 17:10 CDT</StartDateTime>
+		<StartTestTime>1775254238</StartTestTime>
+		<TestList>
+			<Test>./ipv_benchmarking</Test>
+		</TestList>
+		<Test Status="passed">
+			<Name>ipv_benchmarking</Name>
+			<Path>.</Path>
+			<FullName>./ipv_benchmarking</FullName>
+			<FullCommandLine>/home/jmayhugh/repos/matrixstuff/build/matrixstuff_benchmarking</FullCommandLine>
+			<Results>
+				<NamedMeasurement type="numeric/double" name="Execution Time">
+					<Value>0.00134846</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="numeric/double" name="Processors">
+					<Value>1</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Completion Status">
+					<Value>Completed</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Command Line">
+					<Value>/home/jmayhugh/repos/matrixstuff/build/matrixstuff_benchmarking</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Environment">
+					<Value>#CTEST_RESOURCE_GROUP_COUNT=</Value>
+				</NamedMeasurement>
+				<Measurement>
+					<Value encoding="base64" compression="gzip">eJyLTslPLkktLolVgDIUylKLijPz8xQyixWUjPRM9AwNlbii4aqKSvMUyjNLMhSUdHUzUnMKlBTS8osU8gtKgFqKuWypC5DsBTstObE4tdhKwVChBogLEouLU1OATAOFtMTMHCizODuzoCA1BUknSFkR2Hl4dCKpDy5JLCkFqg0OdXZ2DQ5W5AIA6UBZ3Q==</Value>
+				</Measurement>
+			</Results>
+		</Test>
+		<EndDateTime>Apr 03 17:10 CDT</EndDateTime>
+		<EndTestTime>1775254238</EndTestTime>
+		<ElapsedMinutes>0</ElapsedMinutes>
+	</Testing>
+</Site>
