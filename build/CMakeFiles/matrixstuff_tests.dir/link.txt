@@ -1,1 +1,0 @@
-/usr/bin/clang++ -g -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/matrixstuff_tests.dir/tests/doctest_main.cpp.o CMakeFiles/matrixstuff_tests.dir/tests/ipv_doctest.cpp.o CMakeFiles/matrixstuff_tests.dir/ipv.cpp.o -o matrixstuff_tests
