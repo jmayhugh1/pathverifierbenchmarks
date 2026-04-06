@@ -12,7 +12,7 @@ approximateIpv::approximateIpv(Map map, double prior) : ipv(std::move(map)) {
   confirmed_safe_.assign(num_edges, false);
 }
 
-std::tuple<bool, double> approximateIpv::informationGain(Path path) {
+void approximateIpv::observe(Path path, bool observed_collision) {
   assert(path.size() == num_edges);
 
   for (size_t i = 0; i < num_edges; ++i) {
@@ -21,9 +21,7 @@ std::tuple<bool, double> approximateIpv::informationGain(Path path) {
     }
   }
 
-  const double h_before = total_entropy(pmat);
-
-  const bool safe = !collision(path);
+  const bool safe = !observed_collision;
 
   double p_all_safe = 1.f;
   for (size_t i = 0; i < num_edges; ++i) {
@@ -57,10 +55,24 @@ std::tuple<bool, double> approximateIpv::informationGain(Path path) {
       }
     }
   }
+}
+
+std::tuple<bool, double> approximateIpv::informationGain(Path path) {
+  assert(path.size() == num_edges);
+
+  for (size_t i = 0; i < num_edges; ++i) {
+    if (confirmed_safe_[i]) {
+      pmat[i] = 0.f;
+    }
+  }
+
+  const double h_before = total_entropy(pmat);
+  const double observed_collision = collision(path);
+  observe(path, observed_collision);
 
   const double h_after = total_entropy(pmat);
   const double ig = h_before - h_after;
-  return {safe, ig};
+  return {!observed_collision, ig};
 }
 
 // --- exactIpv (full joint bitmask posterior) ---

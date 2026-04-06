@@ -60,6 +60,9 @@ public:
   /// per edge (default 0.5).
   explicit approximateIpv(Map map, double prior = 0.5f);
 
+  /// Condition the posterior on a traversal outcome (collision or safe).
+  void observe(Path path, bool observed_collision);
+
   /// Simulate traversing @p path against the hidden map.  On collision the
   /// queried-edge beliefs are scaled up (Bayesian-like conditioning on at
   /// least one hazard); on safe passage the queried edges are zeroed and
