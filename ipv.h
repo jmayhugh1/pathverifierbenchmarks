@@ -71,16 +71,18 @@ public:
 };
 
 class approximateIpv : public ipv {
-  pMatrix pmat;
+  /// Per-edge hazard beliefs stored as log-odds: log(p/(1-p)).
+  /// -inf means confirmed safe (p=0), +inf means certain hazard (p=1).
+  std::vector<double> logodds_;
   /// Edge was on a path observed safe; hazard belief stays 0 permanently.
   std::vector<bool> confirmed_safe_;
 
 public:
   /// Construct with a ground-truth map and a uniform prior hazard probability
-  /// per edge (default 0.5).
-  explicit approximateIpv(Map map, double prior = 0.5f);
+  /// per edge (default 0.5).  The prior is converted to log-odds internally.
+  explicit approximateIpv(Map map, double prior = 0.5);
 
-  /// Condition the posterior on a traversal outcome (collision or safe).
+  /// Condition the beliefs on a traversal outcome (collision or safe).
   void observe(Path path, bool observed_collision);
 
   /// Simulate traversing @p path against the hidden map.  On collision the
@@ -88,9 +90,10 @@ public:
   /// least one hazard); on safe passage the queried edges are zeroed and
   /// permanently locked.  Returns (safe, realized_information_gain_bits).
   std::tuple<bool, double> informationGain(Path path) override;
-  /// Current marginal hazard beliefs P(Z_i=1) per edge (updated by
-  /// informationGain).
-  std::vector<double> marginals() const { return pmat; };
+
+  /// Current marginal hazard probabilities P(Z_i=1) per edge, converted from
+  /// internal log-odds representation.
+  std::vector<double> marginals() const;
 };
 
 /// Full joint over hazard bitmasks Z ∈ {0,1}^{|E|}: eliminate inconsistent
@@ -98,16 +101,11 @@ public:
 /// |E| (≤62 edges).
 class exactIpv : public ipv {
 private:
-  std::vector<double> prior_edge_prob_;
-  std::vector<double> posterior_;
+  /// Per-edge prior hazard stored as log-odds: log(p/(1-p)).
+  std::vector<double> prior_edge_logodds_;
+  /// Log-probability for each of the 2^|E| joint hazard states.
+  std::vector<double> log_posterior_;
   size_t edges_;
-  static constexpr double kEps = 1e-12;
-
-  /// Shannon entropy H(dist) in bits over an arbitrary discrete distribution.
-  static double entropyBits(const std::vector<double> &dist);
-
-  /// H(p) = -p log2(p) - (1-p) log2(1-p); returns 0 at the boundaries.
-  static double binaryEntropy(double p);
 
   /// Convert a bool-vector path to a compact bitmask (bit i set ⟺ path[i]).
   uint64_t pathToMask(const Path &path) const;
@@ -118,19 +116,18 @@ private:
   static bool consistent(uint64_t state, uint64_t query_mask,
                          bool observed_collision);
 
-  /// Renormalize posterior_ to sum to 1; throws if total mass is ~0.
+  /// Renormalize log_posterior_ so that logsumexp = 0 (i.e. probs sum to 1).
   void normalize();
 
-  /// P(collision | query_mask) = Σ_{s: s ∧ mask ≠ 0} posterior_[s].
-  double predictiveCollisionProbMask(uint64_t query_mask) const;
+  /// Log P(collision | query_mask) via logsumexp over matching states.
+  double logPredictiveCollisionProbMask(uint64_t query_mask) const;
 
-  /// Zero out posterior entries inconsistent with the observation, then
-  /// renormalize.
+  /// Set log-prob to -inf for inconsistent states, then renormalize.
   void observeMask(uint64_t query_mask, bool observed_collision);
 
 public:
-  /// Build the full 2^|E| joint from independent per-edge priors and
-  /// normalize.  Throws if |E| > 62 (bitmask overflow).
+  /// Build the full 2^|E| joint from independent per-edge priors in log-space
+  /// and normalize.  Throws if |E| > 62 (bitmask overflow).
   explicit exactIpv(Map map, const pMatrix &priors);
 
   /// Condition the posterior on a traversal outcome (collision or safe).
@@ -148,8 +145,10 @@ public:
   /// outcome, and return (safe, realized_information_gain_bits).
   std::tuple<bool, double> informationGain(Path path) override;
 
-  /// Marginal hazard probabilities P(Z_i = 1) for each edge under the current
-  /// posterior.
+  /// Marginal hazard probabilities P(Z_i = 1) per edge, converted from
+  /// log-space posterior.
   std::vector<double> marginals() const;
-  const std::vector<double> &posterior() const { return posterior_; }
+
+  /// Posterior as probabilities (converted from internal log-space).
+  std::vector<double> posterior() const;
 };

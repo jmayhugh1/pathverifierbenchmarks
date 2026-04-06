@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <limits>
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <numeric>
@@ -61,50 +62,59 @@ Path Graph::randomPath(std::mt19937 &rng, double p_query) {
 }
 
 approximateIpv::approximateIpv(Map map, double prior) : ipv(std::move(map)) {
-  pmat.assign(num_edges, prior);
+  const double l0 = ipv_utils::probToLogOdds(prior);
+  logodds_.assign(num_edges, l0);
   confirmed_safe_.assign(num_edges, false);
+}
+
+std::vector<double> approximateIpv::marginals() const {
+  return ipv_utils::logOddsToProbs(logodds_);
 }
 
 void approximateIpv::observe(Path path, bool observed_collision) {
   assert(path.size() == num_edges);
+  constexpr double neg_inf = -std::numeric_limits<double>::infinity();
 
   for (size_t i = 0; i < num_edges; ++i) {
     if (confirmed_safe_[i]) {
-      pmat[i] = 0.f;
+      logodds_[i] = neg_inf;
     }
   }
 
   const bool safe = !observed_collision;
 
-  double p_all_safe = 1.f;
+  // log(p_all_safe) = Σ_{queried} log(1-p_i) = Σ -softplus(l_i)
+  double log_p_all_safe = 0.0;
   for (size_t i = 0; i < num_edges; ++i) {
-    if (confirmed_safe_[i]) {
-      continue;
-    }
-    const double m = path[i] ? 1.f : 0.f;
-    p_all_safe *= (1.f - m * pmat[i]);
+    if (confirmed_safe_[i] || !path[i]) continue;
+    log_p_all_safe -= ipv_utils::softplus(logodds_[i]);
   }
-  const double p_unsafe = 1.f - p_all_safe;
 
-  double alpha = 0.f;
+  // log(alpha) = -log(p_unsafe) = -log(1 - exp(log_p_all_safe))
+  double log_alpha = 0.0;
   if (!safe) {
-    alpha = 1.f / std::max(p_unsafe, ipv::eps);
+    log_alpha = -ipv_utils::log1mexp(log_p_all_safe);
   }
 
-  for (size_t i = 0; i < num_edges; ++i) {
-    if (confirmed_safe_[i]) {
-      continue;
+  if (!safe) {
+    for (size_t i = 0; i < num_edges; ++i) {
+      if (confirmed_safe_[i] || !path[i]) continue;
+      // log(alpha * p_i) = log_alpha + log(p_i) = log_alpha - softplus(-l_i)
+      const double log_ap = log_alpha - ipv_utils::softplus(-logodds_[i]);
+      if (log_ap >= 0.0) {
+        logodds_[i] = std::numeric_limits<double>::infinity();
+      } else {
+        // l' = log(alpha*p / (1 - alpha*p)) = log_ap - log(1 - exp(log_ap))
+        logodds_[i] = log_ap - ipv_utils::log1mexp(log_ap);
+      }
     }
-    const double m = path[i] ? 1.f : 0.f;
-    double pi = (1.f - m) * pmat[i] + m * (alpha * pmat[i]);
-    pmat[i] = std::clamp(pi, static_cast<double>(0), static_cast<double>(1));
   }
 
   if (safe) {
     for (size_t i = 0; i < num_edges; ++i) {
       if (path[i]) {
         confirmed_safe_[i] = true;
-        pmat[i] = 0.f;
+        logodds_[i] = neg_inf;
       }
     }
   }
@@ -112,40 +122,24 @@ void approximateIpv::observe(Path path, bool observed_collision) {
 
 std::tuple<bool, double> approximateIpv::informationGain(Path path) {
   assert(path.size() == num_edges);
+  constexpr double neg_inf = -std::numeric_limits<double>::infinity();
 
   for (size_t i = 0; i < num_edges; ++i) {
     if (confirmed_safe_[i]) {
-      pmat[i] = 0.f;
+      logodds_[i] = neg_inf;
     }
   }
 
-  const double h_before = ipv_utils::total_entropy(pmat);
-  const double observed_collision = collision(path);
+  const double h_before = ipv_utils::total_entropy_logodds(logodds_);
+  const bool observed_collision = collision(path);
   observe(path, observed_collision);
 
-  const double h_after = ipv_utils::total_entropy(pmat);
+  const double h_after = ipv_utils::total_entropy_logodds(logodds_);
   const double ig = h_before - h_after;
   return {!observed_collision, ig};
 }
 
-// --- exactIpv (full joint bitmask posterior) ---
-
-double exactIpv::entropyBits(const std::vector<double> &dist) {
-  double h = 0.0;
-  for (double p : dist) {
-    if (p > 0.0) {
-      h -= p * std::log2(p);
-    }
-  }
-  return h;
-}
-
-double exactIpv::binaryEntropy(double p) {
-  if (p <= 0.0 || p >= 1.0) {
-    return 0.0;
-  }
-  return -p * std::log2(p) - (1.0 - p) * std::log2(1.0 - p);
-}
+// --- exactIpv (full joint bitmask posterior, log-space) ---
 
 uint64_t exactIpv::pathToMask(const Path &path) const {
   if (path.size() != edges_) {
@@ -167,37 +161,39 @@ bool exactIpv::consistent(uint64_t state, uint64_t query_mask,
 }
 
 void exactIpv::normalize() {
-  const double z = std::accumulate(posterior_.begin(), posterior_.end(), 0.0);
-  if (z <= kEps) {
+  const double log_z = ipv_utils::logsumexp(log_posterior_);
+  if (std::isinf(log_z) && log_z < 0) {
     throw std::runtime_error(
         "Posterior became zero: observations are inconsistent.");
   }
-  for (double &w : posterior_) {
-    w /= z;
+  for (double &lw : log_posterior_) {
+    lw -= log_z;
   }
 }
 
-double exactIpv::predictiveCollisionProbMask(uint64_t query_mask) const {
-  double p = 0.0;
-  for (uint64_t state = 0; state < posterior_.size(); ++state) {
+double exactIpv::logPredictiveCollisionProbMask(uint64_t query_mask) const {
+  std::vector<double> matching;
+  for (uint64_t state = 0; state < log_posterior_.size(); ++state) {
     if ((state & query_mask) != 0) {
-      p += posterior_[state];
+      matching.push_back(log_posterior_[state]);
     }
   }
-  return p;
+  return ipv_utils::logsumexp(matching);
 }
 
 void exactIpv::observeMask(uint64_t query_mask, bool observed_collision) {
-  for (uint64_t state = 0; state < posterior_.size(); ++state) {
+  constexpr double neg_inf = -std::numeric_limits<double>::infinity();
+  for (uint64_t state = 0; state < log_posterior_.size(); ++state) {
     if (!consistent(state, query_mask, observed_collision)) {
-      posterior_[state] = 0.0;
+      log_posterior_[state] = neg_inf;
     }
   }
   normalize();
 }
 
 exactIpv::exactIpv(Map map, const pMatrix &priors)
-    : ipv(std::move(map)), prior_edge_prob_(priors.begin(), priors.end()),
+    : ipv(std::move(map)),
+      prior_edge_logodds_(ipv_utils::probsToLogOdds(priors)),
       edges_(num_edges) {
 
   if (priors.size() != edges_) {
@@ -207,23 +203,26 @@ exactIpv::exactIpv(Map map, const pMatrix &priors)
     throw std::invalid_argument(
         "This exact bitmask version supports at most 62 edges.");
   }
-  for (double p : prior_edge_prob_) {
+  for (double p : priors) {
     if (p < 0.0 || p > 1.0) {
       throw std::invalid_argument("Each prior must lie in [0,1].");
     }
   }
 
   const uint64_t num_states = uint64_t{1} << edges_;
-  posterior_.assign(num_states, 0.0);
+  log_posterior_.assign(num_states, 0.0);
 
+  // Build joint in log-space: log P(state) = Σ log P(edge_i | state_bit_i)
+  // log(p) = -softplus(-l), log(1-p) = -softplus(l)
   for (uint64_t state = 0; state < num_states; ++state) {
-    double w = 1.0;
+    double log_w = 0.0;
     for (size_t i = 0; i < edges_; ++i) {
       const bool hazardous = ((state >> i) & 1ULL) != 0;
-      const double p = prior_edge_prob_[i];
-      w *= hazardous ? p : (1.0 - p);
+      const double l = prior_edge_logodds_[i];
+      log_w += hazardous ? -ipv_utils::softplus(-l)
+                         : -ipv_utils::softplus(l);
     }
-    posterior_[state] = w;
+    log_posterior_[state] = log_w;
   }
   normalize();
 }
@@ -233,40 +232,50 @@ void exactIpv::observe(const Path &path, bool observed_collision) {
 }
 
 double exactIpv::predictiveCollisionProb(const Path &path) const {
-  return predictiveCollisionProbMask(pathToMask(path));
+  return std::exp(logPredictiveCollisionProbMask(pathToMask(path)));
 }
 
 double exactIpv::expectedInformationGain(const Path &path) const {
-  return binaryEntropy(predictiveCollisionProb(path));
+  const double p = predictiveCollisionProb(path);
+  return ipv_utils::binary_entropy(p);
 }
 
 std::tuple<bool, double> exactIpv::informationGain(Path path) {
-  std::vector<double> prior_marginals = this->marginals();
+  // Compute marginals as log-odds before observation.
+  const std::vector<double> m_before = marginals();
+  const std::vector<double> lo_before = ipv_utils::probsToLogOdds(m_before);
+
   observe(path, collision(path));
-  const std::vector<double> marginals = this->marginals();
+
+  const std::vector<double> m_after = marginals();
+  const std::vector<double> lo_after = ipv_utils::probsToLogOdds(m_after);
+
   const bool safe = !collision(path);
-  double h_before = 0.0;
-  double h_after = 0.0;
-  for (size_t i = 0; i < edges_; ++i) {
-    h_before += binaryEntropy(prior_marginals[i]);
-    h_after += binaryEntropy(marginals[i]);
-  }
-  const double realized = h_before - h_after;
-  return {safe, realized};
+  const double h_before = ipv_utils::total_entropy_logodds(lo_before);
+  const double h_after = ipv_utils::total_entropy_logodds(lo_after);
+  return {safe, h_before - h_after};
 }
 
 std::vector<double> exactIpv::marginals() const {
-  std::vector<double> m(edges_, 0.0);
-  for (uint64_t state = 0; state < posterior_.size(); ++state) {
-    const double w = posterior_[state];
-    if (w <= 0.0) {
-      continue;
-    }
-    for (size_t i = 0; i < edges_; ++i) {
-      if (((state >> i) & 1ULL) != 0) {
-        m[i] += w;
+  // For each edge, logsumexp over states where that bit is set.
+  std::vector<double> m(edges_);
+  for (size_t i = 0; i < edges_; ++i) {
+    std::vector<double> matching;
+    const uint64_t bit = uint64_t{1} << i;
+    for (uint64_t state = 0; state < log_posterior_.size(); ++state) {
+      if ((state & bit) != 0) {
+        matching.push_back(log_posterior_[state]);
       }
     }
+    m[i] = std::exp(ipv_utils::logsumexp(matching));
   }
   return m;
+}
+
+std::vector<double> exactIpv::posterior() const {
+  std::vector<double> p(log_posterior_.size());
+  for (size_t i = 0; i < log_posterior_.size(); ++i) {
+    p[i] = std::exp(log_posterior_[i]);
+  }
+  return p;
 }
