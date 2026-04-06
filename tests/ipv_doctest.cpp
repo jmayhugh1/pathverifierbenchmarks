@@ -126,3 +126,22 @@ TEST_CASE("exactIpv observe collision conditions on hazard along query mask") {
   CHECK(mar[0] == doctest::Approx(1.0));
   CHECK(mar[1] == doctest::Approx(0.5));
 }
+
+TEST_CASE("approxiamteIPV and exactIPV produce the same marginals") {
+  Map m = {{0, 1, false}, {1, 2, false}};
+  approximateIpv sim(m, 0.5f);
+  exactIpv sim_exact(m, pMatrix{0.5f, 0.5f});
+
+  CHECK(sim.marginals() == sim_exact.marginals());
+
+  //now check after one query
+  sim.informationGain(Path{true, false});
+  sim_exact.informationGain(Path{true, false});
+  CHECK(sim.marginals() == sim_exact.marginals());
+
+  sim.informationGain(Path{true, true});
+  sim_exact.informationGain(Path{true, true});
+  CHECK(sim.marginals() == sim_exact.marginals());
+
+
+}
