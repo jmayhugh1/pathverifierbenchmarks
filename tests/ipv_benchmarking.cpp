@@ -6,6 +6,7 @@
 #include <random>
 
 #include "ipv_utils.h"
+#include "test_utils.h"
 
 TEST_CASE(
     "benchmark approximateIpv vs exactIpv — 20 iterations, chrono timed") {
@@ -74,4 +75,24 @@ TEST_CASE(
   std::cout << "avg TIME exact       " << std::setw(4) << avg_time_e << '\n';
   std::cout << "avg IG approximate " << std::setw(4) << avg_ig_a << '\n';
   std::cout << "avg IG exact       " << std::setw(4) << avg_ig_e << '\n';
+}
+
+TEST_CASE("Benchmarking 5v_6e graph") {
+  runGraphBenchmark("5v_6e", 0.5, 0.5, 20, true);
+}
+
+TEST_CASE("Benchmarking 7v_13e graph") {
+  runGraphBenchmark("7v_13e", 0.5, 0.5, 40, true);
+}
+
+TEST_CASE("Benchmarking 8v_21e graph") {
+  runGraphBenchmark("8v_21e", 0.5, 0.5, 60, true);
+}
+
+TEST_CASE("Benchmarking 9v_19e graph") {
+  runGraphBenchmark("9v_19e", 0.5, 0.5, 80, true);
+}
+
+TEST_CASE("Benchmarking 10v_25e graph") {
+  runGraphBenchmark("10v_25e", 0.5, 0.5, 100, true);
 }

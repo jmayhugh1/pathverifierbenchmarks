@@ -27,7 +27,8 @@ add_executable(matrixstuff_tests tests/doctest_main.cpp tests/ipv_doctest.cpp
                               ipv.cpp ipv_utils.cpp)
 
 add_executable(matrixstuff_benchmarking tests/doctest_main.cpp
-                                        tests/ipv_benchmarking.cpp ipv.cpp ipv_utils.cpp)
+                                        tests/ipv_benchmarking.cpp tests/test_utils.cpp
+                                        ipv.cpp ipv_utils.cpp)
                               
 add_executable(matrixstuff_graph_configs tests/doctest_main.cpp tests/ipv_graph_configs.cpp ipv.cpp ipv_utils.cpp)
 
@@ -37,13 +38,19 @@ target_link_libraries(matrixstuff_tests PRIVATE doctest::doctest nlohmann_json::
 target_include_directories(matrixstuff_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(matrixstuff_benchmarking PRIVATE doctest::doctest nlohmann_json::nlohmann_json)
-target_include_directories(matrixstuff_benchmarking PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(matrixstuff_benchmarking PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 target_link_libraries(matrixstuff_graph_configs PRIVATE doctest::doctest nlohmann_json::nlohmann_json)
 target_include_directories(matrixstuff_graph_configs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 enable_testing()
-add_test(NAME ipv_doctest COMMAND matrixstuff_tests)
-add_test(NAME ipv_benchmarking COMMAND matrixstuff_benchmarking)
 
-add_test(NAME ipv_graph_configs COMMAND matrixstuff_graph_configs)
-set_tests_properties(ipv_graph_configs PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+list(APPEND CMAKE_MODULE_PATH ${doctest_SOURCE_DIR}/scripts/cmake)
+include(doctest)
+
+doctest_discover_tests(matrixstuff_tests)
+doctest_discover_tests(matrixstuff_benchmarking
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+doctest_discover_tests(matrixstuff_graph_configs
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
