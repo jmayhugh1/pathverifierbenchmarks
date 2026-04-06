@@ -3,6 +3,8 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <nlohmann/json.hpp>
+#include <random>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -19,6 +21,24 @@ using Path = std::vector<bool>;
 // One prior hazard probability per edge (used by approximate / exact
 // constructors).
 using pMatrix = std::vector<double>;
+
+class Graph {
+  Map map;
+  int num_nodes;
+  int num_edges;
+  std::vector<std::tuple<size_t, size_t>> edge_pairs;
+  inline static const std::string GRAPH_CONFIGS_PATH = "configs/graphs.json";
+  static const nlohmann::json &getGraphConfigs();
+
+public:
+  Graph(std::string graph_name);
+  Graph(std::string name, int num_nodes, int num_edges,
+        const std::vector<std::tuple<size_t, size_t>> &edge_pairs);
+  const Map &getMap() const { return map; }
+  void randomlyAssignHazards(double hazard_probability);
+  Path randomPath(std::mt19937 &rng, double p_query = 0.5);
+  Path randomPath(double p_query = 0.5);
+};
 
 class ipv {
 private:

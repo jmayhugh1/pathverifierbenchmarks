@@ -3,9 +3,62 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <fstream>
+#include <nlohmann/json.hpp>
 #include <numeric>
+#include <random>
 #include <stdexcept>
 #include <utility>
+
+const nlohmann::json &Graph::getGraphConfigs() {
+  static nlohmann::json configs;
+  if (configs.empty()) {
+    std::ifstream file(GRAPH_CONFIGS_PATH);
+    file >> configs;
+  }
+  return configs;
+}
+
+Graph::Graph(std::string name, int num_nodes, int num_edges,
+             const std::vector<std::tuple<size_t, size_t>> &edge_pairs)
+    : num_nodes(num_nodes), num_edges(num_edges), edge_pairs(edge_pairs) {
+  for (const auto &edge : edge_pairs) {
+    map.push_back({std::get<0>(edge), std::get<1>(edge), false});
+  }
+  assert(map.size() == num_edges);
+}
+
+Graph::Graph(std::string graph_name) {
+  nlohmann::json configs = getGraphConfigs();
+  nlohmann::json graph_config = configs.at(graph_name);
+  num_nodes = graph_config.at("num_nodes");
+  edge_pairs = graph_config.at("edge_pairs");
+  for (const auto &edge : edge_pairs) {
+    map.push_back({std::get<0>(edge), std::get<1>(edge), false});
+  }
+  num_edges = map.size();
+}
+
+void Graph::randomlyAssignHazards(double hazard_probability) {
+  std::random_device rd;
+  std::mt19937 rng(rd());
+  std::bernoulli_distribution haz(hazard_probability);
+  for (auto &edge : map) {
+    std::get<2>(edge) = haz(rng);
+  }
+}
+
+Path Graph::randomPath(double p_query) {
+  std::random_device rd;
+  std::mt19937 rng(rd());
+  size_t num_edges = map.size();
+  return ipv_utils::randomPath(num_edges, rng, p_query);
+}
+
+Path Graph::randomPath(std::mt19937 &rng, double p_query) {
+  size_t num_edges = map.size();
+  return ipv_utils::randomPath(num_edges, rng, p_query);
+}
 
 approximateIpv::approximateIpv(Map map, double prior) : ipv(std::move(map)) {
   pmat.assign(num_edges, prior);
