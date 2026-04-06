@@ -1,6 +1,8 @@
 #include "ipv_utils.h"
 #include <stdexcept>
 
+namespace ipv_utils {
+
 Path randomPath(size_t num_edges, std::mt19937 &rng, double p_query) {
   if (p_query < 0.0 || p_query > 1.0) {
     throw std::invalid_argument("p_query must be in [0,1].");
@@ -67,3 +69,5 @@ double total_entropy(const pMatrix &p) {
   }
   return sum;
 }
+
+} // namespace ipv_utils

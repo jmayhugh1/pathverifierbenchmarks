@@ -15,7 +15,7 @@ TEST_CASE(
   constexpr unsigned k_seed = 42;
 
   std::mt19937 rng(k_seed);
-  const Map map = randomMap(k_vertices, k_edges, rng, 0.25);
+  const Map map = ipv_utils::randomMap(k_vertices, k_edges, rng, 0.25);
   const double prior = 0.5;
   const pMatrix priors(k_edges, prior);
 
@@ -32,7 +32,7 @@ TEST_CASE(
   double avg_ig_e = 0.0;
 
   for (int i = 0; i < k_iters; ++i) {
-    const Path path = randomPath(k_edges, rng, 0.35);
+    const Path path = ipv_utils::randomPath(k_edges, rng, 0.35);
 
     const auto t_a0 = std::chrono::high_resolution_clock::now();
     const auto [safe_a, ig_a] = approx.informationGain(path);

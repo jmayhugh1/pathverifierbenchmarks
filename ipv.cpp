@@ -66,11 +66,11 @@ std::tuple<bool, double> approximateIpv::informationGain(Path path) {
     }
   }
 
-  const double h_before = total_entropy(pmat);
+  const double h_before = ipv_utils::total_entropy(pmat);
   const double observed_collision = collision(path);
   observe(path, observed_collision);
 
-  const double h_after = total_entropy(pmat);
+  const double h_after = ipv_utils::total_entropy(pmat);
   const double ig = h_before - h_after;
   return {!observed_collision, ig};
 }

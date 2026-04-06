@@ -4,6 +4,7 @@
 
 #include <random>
 
+namespace ipv_utils {
 /// Generate a random query mask where each edge is independently included with
 /// probability @p p_query.
 Path randomPath(size_t num_edges, std::mt19937 &rng, double p_query = 0.5);
@@ -23,3 +24,5 @@ double binary_entropy(double p);
 
 /// Sum of per-edge binary entropies — total uncertainty assuming independence.
 double total_entropy(const pMatrix &p);
+
+} // namespace ipv_utils
