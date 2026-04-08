@@ -294,3 +294,90 @@ TEST_CASE("exactIpv: predictiveCollisionProb matches logsumexp derivation") {
   double expected = 1.0 - (1.0 - 0.3) * (1.0 - 0.7);
   CHECK(p == doctest::Approx(expected));
 }
+
+// ====================================================================
+// Counter-example: joint reasoning captures what marginal-only misses
+// ====================================================================
+// Graph: v1--e1--v2--e2--v3--e3--v4--e4--v5  (4 edges, uniform prior 0.5)
+//
+// Observation 1: query {e2,e3,e4}, collision (r=1)
+//   => Z_e2 ∨ Z_e3 ∨ Z_e4 = 1
+//
+// Observation 2: query {e1,e2,e3}, safe (r=0)
+//   => Z_e1=0, Z_e2=0, Z_e3=0
+//
+// Combined: Z_e4 must be 1.  The exact joint posterior captures this;
+// the approximate (marginal-only) update cannot.
+
+TEST_CASE("counter-example: exact IPV deduces Z_e4=1 from joint "
+           "constraints; approximate IPV cannot") {
+  // Ground truth: only e4 is hazardous.
+  // q1 = {e2,e3,e4} → collision (e4 hit)
+  // q2 = {e1,e2,e3} → safe     (none hazardous)
+  Map m = {
+      {0, 1, false}, // e1 = (v1,v2)
+      {1, 2, false}, // e2 = (v2,v3)
+      {2, 3, false}, // e3 = (v3,v4)
+      {3, 4, true},  // e4 = (v4,v5) — hazardous
+  };
+
+  approximateIpv approx(m, 0.5);
+  exactIpv exact(m, pMatrix(4, 0.5));
+
+  auto print_state = [](const std::string &label, const std::vector<double> &mar) {
+    MESSAGE(label << " marginals: ["
+            << mar[0] << ", " << mar[1] << ", "
+            << mar[2] << ", " << mar[3] << "]");
+  };
+
+  MESSAGE("=== Prior ===");
+  print_state("approx", approx.marginals());
+  print_state("exact ", exact.marginals());
+
+  // Observation 1: query {e2,e3,e4} → collision (e4 is hazardous)
+  const Path q1 = {false, true, true, true};
+  const auto [safe_a1, ig_a1] = approx.informationGain(q1);
+  const auto [safe_e1, ig_e1] = exact.informationGain(q1);
+
+  CHECK_FALSE(safe_a1);
+  CHECK_FALSE(safe_e1);
+
+  MESSAGE("=== After obs 1: query {e2,e3,e4}, collision ===");
+  print_state("approx", approx.marginals());
+  print_state("exact ", exact.marginals());
+  MESSAGE("approx IG = " << ig_a1 << " bits");
+  MESSAGE("exact  IG = " << ig_e1 << " bits");
+
+  // Observation 2: query {e1,e2,e3} → safe (none hazardous)
+  const Path q2 = {true, true, true, false};
+  const auto [safe_a2, ig_a2] = approx.informationGain(q2);
+  const auto [safe_e2, ig_e2] = exact.informationGain(q2);
+
+  CHECK(safe_a2);
+  CHECK(safe_e2);
+
+  MESSAGE("=== After obs 2: query {e1,e2,e3}, safe ===");
+  print_state("approx", approx.marginals());
+  print_state("exact ", exact.marginals());
+  MESSAGE("approx IG = " << ig_a2 << " bits");
+  MESSAGE("exact  IG = " << ig_e2 << " bits");
+  MESSAGE("--- Total ---");
+  MESSAGE("approx total IG = " << (ig_a1 + ig_a2) << " bits");
+  MESSAGE("exact  total IG = " << (ig_e1 + ig_e2) << " bits");
+
+  const auto exact_m = exact.marginals();
+  const auto approx_m = approx.marginals();
+
+  REQUIRE(exact_m.size() == 4);
+  REQUIRE(approx_m.size() == 4);
+
+  CHECK(exact_m[0] == doctest::Approx(0.0));
+  CHECK(exact_m[1] == doctest::Approx(0.0));
+  CHECK(exact_m[2] == doctest::Approx(0.0));
+  CHECK(exact_m[3] == doctest::Approx(1.0));
+
+  CHECK(approx_m[0] == doctest::Approx(0.0));
+  CHECK(approx_m[1] == doctest::Approx(0.0));
+  CHECK(approx_m[2] == doctest::Approx(0.0));
+  CHECK(approx_m[3] < 1.0);
+}
