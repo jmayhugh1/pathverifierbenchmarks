@@ -106,6 +106,8 @@ private:
   /// Log-probability for each of the 2^|E| joint hazard states.
   std::vector<double> log_posterior_;
   size_t edges_;
+  /// When true, informationGain uses joint entropy; otherwise marginal entropy.
+  bool use_joint_ig_;
 
   /// Convert a bool-vector path to a compact bitmask (bit i set ⟺ path[i]).
   uint64_t pathToMask(const Path &path) const;
@@ -128,7 +130,9 @@ private:
 public:
   /// Build the full 2^|E| joint from independent per-edge priors in log-space
   /// and normalize.  Throws if |E| > 62 (bitmask overflow).
-  explicit exactIpv(Map map, const pMatrix &priors);
+  /// When @p useJointIG is true (default), informationGain reports the drop in
+  /// joint entropy; otherwise it uses the sum of marginal entropies.
+  explicit exactIpv(Map map, const pMatrix &priors, bool useJointIG = true);
 
   /// Condition the posterior on a traversal outcome (collision or safe).
   void observe(const Path &path, bool observed_collision);
@@ -141,8 +145,16 @@ public:
   /// on the expected information gain from traversing @p path.
   double expectedInformationGain(const Path &path) const;
 
+  /// Shannon entropy of the full joint posterior in bits:
+  /// H = -Σ_z P(z) log₂ P(z), computed directly from log_posterior_.
+  double jointEntropy() const;
+
+  /// Sum of marginal binary entropies in bits: Σ H(p_i).
+  double marginalEntropy() const;
+
   /// Traverse @p path against the hidden map, condition the posterior on the
   /// outcome, and return (safe, realized_information_gain_bits).
+  /// Uses joint or marginal entropy according to the useJointIG flag.
   std::tuple<bool, double> informationGain(Path path) override;
 
   /// Marginal hazard probabilities P(Z_i = 1) per edge, converted from

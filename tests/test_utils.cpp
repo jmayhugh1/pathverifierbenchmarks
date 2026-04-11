@@ -15,7 +15,8 @@ static void printVec(const std::string &label, const std::vector<double> &vec,
   std::cout << label << ": [";
   std::cout << std::fixed << std::setprecision(precision);
   for (size_t i = 0; i < vec.size(); ++i) {
-    if (i > 0) std::cout << ", ";
+    if (i > 0)
+      std::cout << ", ";
     std::cout << vec[i];
   }
   std::cout << "]\n" << std::defaultfloat;
@@ -24,14 +25,16 @@ static void printVec(const std::string &label, const std::vector<double> &vec,
 static void printMask(const std::string &label, const Path &path) {
   std::cout << label << ": [";
   for (size_t i = 0; i < path.size(); ++i) {
-    if (i > 0) std::cout << ", ";
+    if (i > 0)
+      std::cout << ", ";
     std::cout << (path[i] ? "1" : "0");
   }
   std::cout << "]\n";
 }
 
 void runGraphBenchmark(const std::string &graph_name, double prior,
-                       double p_query, int iterations, bool csv) {
+                       double p_query, int iterations, bool csv,
+                       bool use_joint_ig) {
   Graph graph(graph_name);
   graph.randomlyAssignHazards(prior);
   const Map &map = graph.getMap();
@@ -39,7 +42,7 @@ void runGraphBenchmark(const std::string &graph_name, double prior,
   const pMatrix priors(n_edges, prior);
 
   approximateIpv approx(map, prior);
-  exactIpv exact(map, priors);
+  exactIpv exact(map, priors, use_joint_ig);
 
   std::mt19937 rng(42);
 
@@ -54,6 +57,12 @@ void runGraphBenchmark(const std::string &graph_name, double prior,
   std::cout << "Graph: " << graph_name << "  edges: " << n_edges
             << "  prior: " << prior << "  p_query: " << p_query
             << "  iters: " << iterations << '\n';
+
+  if (use_joint_ig) {
+    std::cout << "Using joint information gain on the exactIpv\n";
+  } else {
+    std::cout << "Using marginal information gain on the exactIpv\n";
+  }
 
   double avg_time_a = 0.0, avg_time_e = 0.0;
   double avg_ig_a = 0.0, avg_ig_e = 0.0;
@@ -83,10 +92,10 @@ void runGraphBenchmark(const std::string &graph_name, double prior,
 
     std::cout << "---------- iteration " << i << " ----------\n";
     printMask("query mask", path);
-    std::cout << "  approximate: safe=" << safe_a
-              << "  ig=" << ig_a << " bits  " << us_a << " us\n";
-    std::cout << "  exact:       safe=" << safe_e
-              << "  ig=" << ig_e << " bits  " << us_e << " us\n";
+    std::cout << "  approximate: safe=" << safe_a << "  ig=" << ig_a
+              << " bits  " << us_a << " us\n";
+    std::cout << "  exact:       safe=" << safe_e << "  ig=" << ig_e
+              << " bits  " << us_e << " us\n";
     printVec("  approx marginals", approx.marginals());
     printVec("  exact  marginals", exact.marginals());
 
@@ -103,10 +112,10 @@ void runGraphBenchmark(const std::string &graph_name, double prior,
   avg_time_e /= iterations;
   avg_ig_a /= iterations;
   avg_ig_e /= iterations;
-  std::cout << "avg  approximate  ig=" << avg_ig_a << " bits  "
-            << avg_time_a << " us\n";
-  std::cout << "avg  exact        ig=" << avg_ig_e << " bits  "
-            << avg_time_e << " us\n";
+  std::cout << "avg  approximate  ig=" << avg_ig_a << " bits  " << avg_time_a
+            << " us\n";
+  std::cout << "avg  exact        ig=" << avg_ig_e << " bits  " << avg_time_e
+            << " us\n";
 
   if (csv) {
     std::cout << "CSV written to tests/test_csvs/" << graph_name << ".csv\n";

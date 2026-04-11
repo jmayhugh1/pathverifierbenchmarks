@@ -19,4 +19,5 @@ struct BenchmarkResult {
 /// When @p csv is true, also writes per-iteration rows to
 /// tests/test_csvs/<graph_name>.csv.
 void runGraphBenchmark(const std::string &graph_name, double prior,
-                       double p_query, int iterations, bool csv = false);
+                       double p_query, int iterations, bool csv = false,
+                       bool use_joint_ig = true);

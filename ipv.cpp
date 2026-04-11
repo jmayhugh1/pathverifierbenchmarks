@@ -191,10 +191,11 @@ void exactIpv::observeMask(uint64_t query_mask, bool observed_collision) {
   normalize();
 }
 
-exactIpv::exactIpv(Map map, const pMatrix &priors)
+exactIpv::exactIpv(Map map, const pMatrix &priors, bool useJointIG)
     : ipv(std::move(map)),
       prior_edge_logodds_(ipv_utils::probsToLogOdds(priors)),
-      edges_(num_edges) {
+      edges_(num_edges),
+      use_joint_ig_(useJointIG) {
 
   if (priors.size() != edges_) {
     throw std::invalid_argument("Need one prior probability per edge.");
@@ -240,20 +241,26 @@ double exactIpv::expectedInformationGain(const Path &path) const {
   return ipv_utils::binary_entropy(p);
 }
 
+double exactIpv::jointEntropy() const {
+  const double log2_e = 1.0 / std::log(2.0);
+  double h = 0.0;
+  for (double lp : log_posterior_) {
+    if (std::isinf(lp) && lp < 0) continue;
+    h -= std::exp(lp) * lp;
+  }
+  return h * log2_e;
+}
+
+double exactIpv::marginalEntropy() const {
+  auto lo = ipv_utils::probsToLogOdds(marginals());
+  return ipv_utils::total_entropy_logodds(lo);
+}
+
 std::tuple<bool, double> exactIpv::informationGain(Path path) {
-  // Compute marginals as log-odds before observation.
-  const std::vector<double> m_before = marginals();
-  const std::vector<double> lo_before = ipv_utils::probsToLogOdds(m_before);
-
+  const double h_before = use_joint_ig_ ? jointEntropy() : marginalEntropy();
   observe(path, collision(path));
-
-  const std::vector<double> m_after = marginals();
-  const std::vector<double> lo_after = ipv_utils::probsToLogOdds(m_after);
-
-  const bool safe = !collision(path);
-  const double h_before = ipv_utils::total_entropy_logodds(lo_before);
-  const double h_after = ipv_utils::total_entropy_logodds(lo_after);
-  return {safe, h_before - h_after};
+  const double h_after = use_joint_ig_ ? jointEntropy() : marginalEntropy();
+  return {!collision(path), h_before - h_after};
 }
 
 std::vector<double> exactIpv::marginals() const {

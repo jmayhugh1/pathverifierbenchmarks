@@ -58,6 +58,8 @@ TEST_CASE(
     avg_ig_a += ig_a;
     avg_ig_e += ig_e;
 
+    std::cout << "Maginals after update: " << std::endl;
+
     std::cout << std::setw(4) << i << " approximate " << std::setw(4)
               << std::boolalpha << safe_a << std::noboolalpha << ' '
               << std::setw(8) << ig_a << ' ' << std::setw(13) << us_a << '\n';
@@ -82,7 +84,7 @@ TEST_CASE("Benchmarking 5v_6e graph") {
 }
 
 TEST_CASE("Benchmarking 7v_13e graph") {
-  runGraphBenchmark("7v_13e", 0.5, 0.5, 40, true);
+  runGraphBenchmark("7v_13e", 0.5, 0.5, 40, true, false);
 }
 
 TEST_CASE("Benchmarking 8v_21e graph") {

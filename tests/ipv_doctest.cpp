@@ -268,19 +268,30 @@ TEST_CASE("exactIpv: marginals from log-posterior match hand computation") {
   CHECK(mar[0] == doctest::Approx(0.4));
 }
 
-TEST_CASE("exactIpv: informationGain entropy computed via log-odds path") {
+TEST_CASE("exactIpv: informationGain with marginal entropy flag matches "
+           "marginal entropy drop") {
   Map truth = {{0, 1, false}, {1, 2, true}};
-  exactIpv sim(truth, pMatrix{0.5, 0.5});
+  exactIpv sim(truth, pMatrix{0.5, 0.5}, false);
 
-  auto before_probs = sim.marginals();
-  auto lo_before = ipv_utils::probsToLogOdds(before_probs);
+  auto lo_before = ipv_utils::probsToLogOdds(sim.marginals());
   double h_before = ipv_utils::total_entropy_logodds(lo_before);
 
   auto [safe, ig] = sim.informationGain(Path{false, true});
 
-  auto after_probs = sim.marginals();
-  auto lo_after = ipv_utils::probsToLogOdds(after_probs);
+  auto lo_after = ipv_utils::probsToLogOdds(sim.marginals());
   double h_after = ipv_utils::total_entropy_logodds(lo_after);
+
+  CHECK(ig == doctest::Approx(h_before - h_after).epsilon(1e-10));
+}
+
+TEST_CASE("exactIpv: informationGain with joint entropy flag matches "
+           "joint entropy drop") {
+  Map truth = {{0, 1, false}, {1, 2, true}};
+  exactIpv sim(truth, pMatrix{0.5, 0.5}, true);
+
+  double h_before = sim.jointEntropy();
+  auto [safe, ig] = sim.informationGain(Path{false, true});
+  double h_after = sim.jointEntropy();
 
   CHECK(ig == doctest::Approx(h_before - h_after).epsilon(1e-10));
 }
@@ -380,4 +391,65 @@ TEST_CASE("counter-example: exact IPV deduces Z_e4=1 from joint "
   CHECK(approx_m[1] == doctest::Approx(0.0));
   CHECK(approx_m[2] == doctest::Approx(0.0));
   CHECK(approx_m[3] < 1.0);
+}
+
+// ====================================================================
+// Joint entropy vs marginal entropy tests
+// ====================================================================
+
+TEST_CASE("exactIpv: jointEntropy equals marginalEntropy under independent "
+           "prior") {
+  Map m = {{0, 1, false}, {1, 2, false}, {2, 3, false}};
+  exactIpv sim(m, pMatrix{0.3, 0.5, 0.7});
+  CHECK(sim.jointEntropy() ==
+        doctest::Approx(sim.marginalEntropy()).epsilon(1e-10));
+}
+
+TEST_CASE("exactIpv: jointEntropy <= marginalEntropy after observation "
+           "introduces correlations") {
+  Map m = {{0, 1, true}, {1, 2, false}, {2, 3, false}};
+  exactIpv sim(m, pMatrix{0.5, 0.5, 0.5});
+  sim.observe(Path{true, true, false}, true);
+  CHECK(sim.jointEntropy() <= sim.marginalEntropy() + 1e-10);
+}
+
+TEST_CASE("exactIpv: jointEntropy is zero when posterior is deterministic") {
+  Map m = {{0, 1, false}};
+  exactIpv sim(m, pMatrix{0.5});
+  sim.observe(Path{true}, false);
+  CHECK(sim.jointEntropy() == doctest::Approx(0.0).epsilon(1e-12));
+}
+
+TEST_CASE("exactIpv: joint IG >= marginal IG for same observation sequence") {
+  Map m = {
+      {0, 1, false},
+      {1, 2, false},
+      {2, 3, true},
+  };
+  exactIpv joint_sim(m, pMatrix{0.5, 0.5, 0.5}, true);
+  exactIpv marg_sim(m, pMatrix{0.5, 0.5, 0.5}, false);
+
+  Path q1 = {true, true, true};
+  auto [s_j1, ig_j1] = joint_sim.informationGain(q1);
+  auto [s_m1, ig_m1] = marg_sim.informationGain(q1);
+  CHECK(ig_j1 >= ig_m1 - 1e-10);
+
+  Path q2 = {true, false, false};
+  auto [s_j2, ig_j2] = joint_sim.informationGain(q2);
+  auto [s_m2, ig_m2] = marg_sim.informationGain(q2);
+
+  double total_joint = ig_j1 + ig_j2;
+  double total_marg = ig_m1 + ig_m2;
+  CHECK(total_joint >= total_marg - 1e-10);
+}
+
+TEST_CASE("exactIpv: useJointIG flag defaults to true") {
+  Map m = {{0, 1, true}, {1, 2, false}};
+  exactIpv default_sim(m, pMatrix{0.5, 0.5});
+  exactIpv joint_sim(m, pMatrix{0.5, 0.5}, true);
+
+  Path q = {true, true};
+  auto [s1, ig1] = default_sim.informationGain(q);
+  auto [s2, ig2] = joint_sim.informationGain(q);
+  CHECK(ig1 == doctest::Approx(ig2).epsilon(1e-12));
 }
