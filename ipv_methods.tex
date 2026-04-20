@@ -1,0 +1,696 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Ber}{\mathrm{Bernoulli}}
+\newcommand{\logodds}{\ell}
+\newcommand{\sigmoid}{\sigma}
+\DeclareMathOperator{\softplus}{softplus}
+\DeclareMathOperator{\logsumexp}{logsumexp}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+
+\title{Incremental Path Verification:\\Approximate and Exact Bayesian Update Methods}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+% ====================================================================
+\section{Problem Setup}
+% ====================================================================
+
+Consider a directed graph $G = (V, E)$ with $n = |V|$ vertices and
+$m = |E|$ edges.  Each edge $e \in E$ has a hidden binary hazard state
+$Z_e \in \{0, 1\}$.  The full hazard configuration is the random vector
+$\mathbf{Z} = (Z_1, \dots, Z_m) \in \{0,1\}^m$.
+
+\paragraph{Prior.}
+Edges are a priori independent:
+\[
+  P(\mathbf{Z} = \mathbf{z})
+  = \prod_{e=1}^{m} p_e^{z_e}\,(1-p_e)^{1-z_e},
+  \qquad p_e = P(Z_e = 1) \in [0,1].
+\]
+
+\paragraph{Observation model.}
+At each time step $t = 0, 1, 2, \dots$ we select a \emph{query mask}
+$\mathbf{q}^{(t)} \in \{0,1\}^m$ indicating which edges are traversed,
+and receive a single binary observation:
+\[
+  r^{(t)}
+  = \bigvee_{e:\, q_e^{(t)} = 1} Z_e
+  = \mathbf{1}\!\Bigl[\,\exists\, e : q_e^{(t)} = 1 \;\wedge\; Z_e = 1\Bigr]
+  \;\in\;\{0,1\}.
+\]
+That is, $r = 1$ (\emph{collision}) if \emph{any} queried edge is
+hazardous, and $r = 0$ (\emph{safe}) if \emph{all} queried edges are
+hazard-free.  We denote the history of observations up to time $T$ by
+\[
+  \mathcal{D}_T = \bigl\{(\mathbf{q}^{(0)}, r^{(0)}),\;
+                          (\mathbf{q}^{(1)}, r^{(1)}),\;
+                          \dots,\;
+                          (\mathbf{q}^{(T-1)}, r^{(T-1)})\bigr\}.
+\]
+
+\paragraph{Goal.}
+Maintain a posterior belief $P(\mathbf{Z} \mid \mathcal{D}_t)$ and
+quantify the \emph{realized information gain} at each step.
+
+% ====================================================================
+\section{Shared Definitions and Identities}
+% ====================================================================
+
+\subsection{Core Functions}
+
+For a probability $p \in (0,1)$:
+\begin{align}
+  \logodds(p)     &= \log\frac{p}{1-p}       & &\text{(log-odds)} \label{eq:logodds} \\[4pt]
+  \sigmoid(\ell)  &= \frac{1}{1+e^{-\ell}}   & &\text{(sigmoid, inverse of log-odds)} \label{eq:sigmoid} \\[4pt]
+  \softplus(\ell) &= \log(1 + e^{\ell})       & &\text{(softplus)} \label{eq:softplus} \\[4pt]
+  h(p)            &= -p\log_2 p - (1{-}p)\log_2(1{-}p) & &\text{(binary entropy, bits)} \label{eq:binent}
+\end{align}
+with boundary conventions $h(0) = h(1) = 0$, $\logodds(0) = -\infty$,
+$\logodds(1) = +\infty$.
+
+\subsection{Log-Probability Identities}
+
+Given log-odds $\ell = \logodds(p)$:
+\begin{align}
+  \log p     &= \ell - \softplus(\ell)   = -\softplus(-\ell), \label{eq:logp} \\
+  \log(1-p)  &= -\softplus(\ell). \label{eq:log1mp}
+\end{align}
+These follow from $p = e^\ell / (1 + e^\ell)$ and $1 - p = 1/(1 + e^\ell)$.
+
+\subsection{Binary Entropy from Log-Odds}
+
+The binary entropy $h(\sigmoid(\ell))$ can be computed directly from
+$\ell$ without converting to probability.  Using
+$\sigmoid(\ell) = e^\ell/(1+e^\ell)$ and $\sigmoid(-\ell) = 1 - \sigmoid(\ell)$:
+\begin{align}
+  h\bigl(\sigmoid(\ell)\bigr)
+  &= -\sigmoid(\ell)\log_2\sigmoid(\ell) - \sigmoid(-\ell)\log_2\sigmoid(-\ell) \notag \\
+  &= \frac{1}{\ln 2}\Bigl[\sigmoid(\ell)\,\softplus(-\ell) + \sigmoid(-\ell)\,\softplus(\ell)\Bigr].
+  \label{eq:hlogodds}
+\end{align}
+
+\begin{proof}
+Since $\log \sigmoid(\ell) = \ell - \log(1+e^\ell) = -\softplus(-\ell)$
+and $\log \sigmoid(-\ell) = -\softplus(\ell)$, we have
+$-\sigmoid(\ell)\log\sigmoid(\ell) = \sigmoid(\ell)\,\softplus(-\ell)$
+and similarly for the second term.  Dividing by $\ln 2$ converts from
+nats to bits.
+\end{proof}
+
+\subsection{Numerically Stable Helpers}
+
+The implementation uses two additional stable primitives:
+
+\paragraph{Log-sum-exp.}
+For a vector $(x_1, \dots, x_n)$:
+\[
+  \logsumexp(x_1, \dots, x_n) = \log\!\sum_{i=1}^n e^{x_i}
+  = x_{\max} + \log\!\sum_{i=1}^n e^{x_i - x_{\max}},
+  \qquad x_{\max} = \max_i x_i.
+\]
+
+\paragraph{Log-one-minus-exp.}
+For $a \leq 0$:
+\[
+  \texttt{log1mexp}(a) = \log(1 - e^a) =
+  \begin{cases}
+    \log(-\text{expm1}(a)) & \text{if } a > -\ln 2, \\
+    \text{log1p}(-e^a)     & \text{if } a \leq -\ln 2.
+  \end{cases}
+\]
+The case split avoids catastrophic cancellation.
+
+% ====================================================================
+\section{Information Gain}
+\label{sec:ig}
+% ====================================================================
+
+\subsection{Definition}
+
+Let $H_t$ denote the entropy of the belief at time $t$ (precise definition
+depends on the method; see below).  The \emph{realized information gain}
+at step $t$ is
+\[
+  \mathrm{IG}_t \;=\; H_t - H_{t+1}.
+\]
+
+\subsection{Telescoping and Upper Bound}
+
+\begin{proposition}[Cumulative IG telescopes]
+\label{prop:telescope}
+The cumulative realized information gain over $T$ steps satisfies
+\[
+  \sum_{t=0}^{T-1} \mathrm{IG}_t
+  = \sum_{t=0}^{T-1} (H_t - H_{t+1})
+  = H_0 - H_T.
+\]
+\end{proposition}
+
+\begin{proof}
+Immediate by telescoping.  The sum collapses because $H_{t+1}$ in term $t$
+cancels $H_{t+1}$ in term $t{+}1$.
+\end{proof}
+
+\begin{proposition}[Universal upper bound]
+\label{prop:upperbound}
+Since entropy is non-negative ($H_T \geq 0$), we have
+\[
+  \sum_{t=0}^{T-1} \mathrm{IG}_t = H_0 - H_T \;\leq\; H_0.
+\]
+When the prior is independent Bernoulli,
+\[
+  H_0 = \sum_{e=1}^{m} h(p_e^{(0)}).
+\]
+This bound is tight: it is achieved when all edges are resolved
+($H_T = 0$, i.e.\ the posterior is deterministic).
+\end{proposition}
+
+\subsection{Expected Information Gain}
+
+Before observing the outcome of query $\mathbf{q}$, we can compute the
+\emph{expected} IG.  Let $p_{\text{col}} = P(r=1 \mid \mathbf{q})$ be
+the predictive collision probability under the current posterior.  The
+expected information gain is bounded by
+\[
+  \mathbb{E}[\mathrm{IG}] \;\leq\; h(p_{\text{col}}).
+\]
+Equality holds when the query fully resolves the collision event (i.e.,
+the observation is a sufficient statistic for the queried edges).
+
+% ====================================================================
+\section{Method 1: Approximate (Factored / Mean-Field) Update}
+\label{sec:approximate}
+% ====================================================================
+
+\subsection{State Representation}
+
+The approximate method maintains a factored belief:
+\[
+  Q_t(\mathbf{z})
+  = \prod_{e=1}^{m} p_e^{(t)\,z_e}\,\bigl(1-p_e^{(t)}\bigr)^{1-z_e},
+\]
+where the per-edge beliefs are stored internally as log-odds
+$\ell_e^{(t)} = \logodds(p_e^{(t)})$.  Additionally, a set
+$\mathcal{S}_t \subseteq E$ of \emph{confirmed-safe} edges is maintained;
+for $e \in \mathcal{S}_t$, $\ell_e = -\infty$ (i.e.\ $p_e = 0$)
+permanently.
+
+\subsection{Safe Observation Update ($r = 0$)}
+
+When $r = 0$, all queried edges are known hazard-free with certainty.
+This is an \emph{exact} update:
+\begin{align}
+  \forall\, e \text{ with } q_e = 1:\quad
+  &p_e^{(t+1)} = 0, \quad
+   \ell_e^{(t+1)} = -\infty, \quad
+   \mathcal{S}_{t+1} = \mathcal{S}_t \cup \{e : q_e = 1\}. \label{eq:approx-safe}
+\end{align}
+Non-queried edges are unchanged: $p_e^{(t+1)} = p_e^{(t)}$.
+
+\begin{remark}
+The safe update is exact because the observation $r=0$ factorizes:
+$P(r{=}0 \mid \mathbf{Z}) = \prod_{e:\,q_e=1} (1 - Z_e)$, so conditioning
+preserves independence.  No approximation is needed.
+\end{remark}
+
+\subsection{Collision Observation Update ($r = 1$)}
+\label{sec:approx-collision}
+
+When $r = 1$, we know $\bigvee_{e:\,q_e=1} Z_e = 1$, i.e.\ at least one
+queried edge is hazardous.  Let
+\[
+  Q = \{e : q_e = 1,\; e \notin \mathcal{S}_t\}
+\]
+be the set of queried, unresolved edges.  Define
+\[
+  P_{\text{safe}}
+  = P\Bigl(\bigwedge_{e \in Q} Z_e = 0\Bigr)
+  = \prod_{e \in Q} (1 - p_e^{(t)}).
+\]
+The probability of collision is $P_{\text{col}} = 1 - P_{\text{safe}}$,
+and the scaling factor is
+\begin{equation}
+  \alpha = \frac{1}{P_{\text{col}}} = \frac{1}{1 - P_{\text{safe}}}.
+  \label{eq:alpha}
+\end{equation}
+
+In log-space:
+\begin{align}
+  \log P_{\text{safe}} &= \sum_{e \in Q} \log(1 - p_e) = -\sum_{e \in Q} \softplus(\ell_e), \label{eq:log-psafe} \\
+  \log \alpha &= -\texttt{log1mexp}\bigl(\log P_{\text{safe}}\bigr). \label{eq:log-alpha}
+\end{align}
+
+Each queried edge is then updated:
+\begin{equation}
+  p_e^{(t+1)} = \alpha \cdot p_e^{(t)}, \qquad e \in Q.
+  \label{eq:alpha-scale}
+\end{equation}
+
+In log-odds form:
+\begin{align}
+  \log(\alpha\, p_e) &= \log\alpha + \log p_e
+  = \log\alpha - \softplus(-\ell_e), \label{eq:log-alpha-p} \\[4pt]
+  \ell_e^{(t+1)} &= \log\frac{\alpha\, p_e}{1 - \alpha\, p_e}
+  = \log(\alpha\, p_e) - \texttt{log1mexp}\bigl(\log(\alpha\, p_e)\bigr).
+  \label{eq:new-logodds}
+\end{align}
+If $\log(\alpha\, p_e) \geq 0$ (i.e.\ $\alpha\, p_e \geq 1$), we set
+$\ell_e^{(t+1)} = +\infty$ (saturation to $p_e = 1$).
+
+Non-queried edges are unchanged: $\ell_e^{(t+1)} = \ell_e^{(t)}$.
+
+\subsubsection{Derivation of the $\alpha$-Scaling Rule}
+
+The exact single-edge posterior under a collision observation is:
+\begin{equation}
+  P(Z_e = 1 \mid r{=}1)
+  = \frac{P(r{=}1 \mid Z_e = 1)\, P(Z_e = 1)}{P(r{=}1)}.
+  \label{eq:bayes-single}
+\end{equation}
+Since $r = 1$ is guaranteed when $Z_e = 1$ (that edge alone causes a
+collision), we have $P(r{=}1 \mid Z_e = 1) = 1$.  Thus:
+\begin{equation}
+  P(Z_e = 1 \mid r{=}1)
+  = \frac{p_e}{P(r{=}1)}
+  = \frac{p_e}{P_{\text{col}}}
+  = \alpha \cdot p_e.
+  \label{eq:alpha-derivation}
+\end{equation}
+
+However, this derivation assumes the other queried edges are independent
+of $Z_e$ in the posterior.  The observation $r = 1$ creates the
+constraint $\bigvee_{e \in Q} Z_e = 1$, which introduces
+\emph{negative correlations}: knowing one edge is hazardous makes it
+less likely that the others are.  The exact single-edge marginal is
+\begin{equation}
+  P(Z_e = 1 \mid r{=}1)
+  = \frac{p_e \cdot 1 + (1-p_e)\cdot P\bigl(\bigvee_{e' \in Q\setminus\{e\}} Z_{e'} = 1\bigr)}
+         {P_{\text{col}}}
+  \neq \alpha\, p_e \;\text{in general.}
+\end{equation}
+
+Wait---let us be more careful.  We have:
+\begin{align}
+  P(Z_e = 1 \mid r{=}1)
+  &= \frac{P(r{=}1 \mid Z_e = 1)\, p_e}{P_{\text{col}}} \notag \\
+  &= \frac{1 \cdot p_e}{P_{\text{col}}} = \alpha\, p_e.
+  \label{eq:marginal-exact}
+\end{align}
+This is actually \emph{exact for the marginal} of each edge individually!
+The $\alpha$-scaling correctly computes $P(Z_e = 1 \mid r = 1)$.
+
+\begin{proposition}[Marginal correctness of $\alpha$-scaling]
+\label{prop:marginal-correct}
+Under the prior independence assumption, for any single queried edge $e$:
+\[
+  P(Z_e = 1 \mid r{=}1) = \frac{p_e}{P_{\text{col}}} = \alpha\, p_e.
+\]
+\end{proposition}
+
+\begin{proof}
+$P(r{=}1 \mid Z_e = 1) = 1$ because edge $e$ is on the query and $Z_e = 1$
+guarantees a collision.  Apply Bayes' rule directly.
+\end{proof}
+
+\begin{remark}[Where the approximation lies]
+The updated marginals $\{p_e^{(t+1)}\}$ are individually correct, but the
+approximate method \emph{re-factors} the belief as a product
+$Q_{t+1}(\mathbf{z}) = \prod_e \Ber(p_e^{(t+1)})$.  The true posterior
+$P(\mathbf{Z} \mid r{=}1)$ is \emph{not} a product distribution---the
+edges are negatively correlated under the constraint
+$\bigvee Z_e = 1$.  Specifically, the joint satisfies:
+\[
+  P(\mathbf{Z} = \mathbf{z} \mid r{=}1)
+  = \frac{\mathbf{1}[\mathbf{z} \cdot \mathbf{q} > 0] \cdot P(\mathbf{z})}{P_{\text{col}}}
+  \neq \prod_e p_e^{(t+1)\,z_e}(1-p_e^{(t+1)})^{1-z_e}.
+\]
+The approximate method discards these correlations at each step.
+On subsequent queries, these lost correlations compound---the
+approximate marginals may diverge from the true marginals because
+the ``prior'' for the next step is the refactored product, not
+the true correlated posterior.
+\end{remark}
+
+\subsection{Entropy and Information Gain}
+
+Since $Q_t$ is a product distribution, its entropy decomposes:
+\begin{equation}
+  H(Q_t) = \sum_{e=1}^{m} h(p_e^{(t)}) = \sum_{e=1}^m h\bigl(\sigmoid(\ell_e^{(t)})\bigr).
+  \label{eq:approx-entropy}
+\end{equation}
+Using the log-odds form \eqref{eq:hlogodds}, this is computed without
+converting to probabilities.  The realized IG is
+\[
+  \mathrm{IG}_t^{\text{approx}} = H(Q_t) - H(Q_{t+1}).
+\]
+
+\subsubsection{When Can Approximate IG Be Negative?}
+
+For the safe case ($r = 0$), confirmed-safe edges move from $p_e > 0$ to
+$p_e = 0$, strictly reducing $h(p_e)$.  So $\mathrm{IG}_t \geq 0$ always
+when $r = 0$.
+
+For the collision case ($r = 1$), the $\alpha$-scaling increases each
+queried edge's probability.  If $p_e^{(t)} < 0.5$ and
+$\alpha\, p_e^{(t)}$ lands closer to $0.5$, then $h(p_e)$ \emph{increases}.
+Since $h$ is maximized at $p = 0.5$, pushing probabilities toward $0.5$
+increases marginal entropy, and
+$\mathrm{IG}_t^{\text{approx}} < 0$ can occur.
+
+\begin{lemma}[Condition for negative approximate IG on collision]
+$\mathrm{IG}_t^{\text{approx}} < 0$ can occur when $r^{(t)} = 1$ if and
+only if the total increase in entropy from edges pushed toward $0.5$
+exceeds the decrease (if any) from edges pushed past $0.5$:
+\[
+  \sum_{e \in Q} \bigl[h(\alpha\, p_e) - h(p_e)\bigr] > 0.
+\]
+\end{lemma}
+
+This is a known limitation of any factored approximation applied to
+disjunctive constraints.
+
+\subsection{Lifted Product Joint}
+\label{sec:lifted-joint}
+
+For apples-to-apples comparison with the exact method at the
+joint-distribution level, we define the \emph{lifted product joint}:
+\[
+  Q_t(\mathbf{z}) = \prod_{e=1}^{m} p_e^{(t)\,z_e}\,(1-p_e^{(t)})^{1-z_e},
+  \qquad \mathbf{z} \in \{0,1\}^m.
+\]
+This is stored as probabilities over $2^m$ states in bitmask order
+(bit $e$ of the state index $\leftrightarrow$ $z_e$), matching the exact
+method's representation.  In log-space:
+\begin{equation}
+  \log Q_t(\mathbf{z})
+  = \sum_{e=1}^{m}
+    \begin{cases}
+      -\softplus(-\ell_e^{(t)}) & \text{if } z_e = 1, \\[2pt]
+      -\softplus(\ell_e^{(t)})  & \text{if } z_e = 0.
+    \end{cases}
+  \label{eq:lifted-log}
+\end{equation}
+
+\begin{proposition}[Entropy of lifted product joint]
+\label{prop:lifted-entropy}
+For the product distribution $Q_t$:
+\[
+  H(Q_t) = -\sum_{\mathbf{z} \in \{0,1\}^m} Q_t(\mathbf{z})\,\log_2 Q_t(\mathbf{z})
+  = \sum_{e=1}^{m} h(p_e^{(t)}).
+\]
+\end{proposition}
+
+\begin{proof}
+By independence, the joint entropy equals the sum of marginal entropies.
+Formally, since $Q_t(\mathbf{z}) = \prod_e Q_t^{(e)}(z_e)$ where
+$Q_t^{(e)}$ is the Bernoulli marginal for edge $e$:
+\begin{align*}
+  H(Q_t)
+  &= -\sum_{\mathbf{z}} \prod_e Q_t^{(e)}(z_e) \cdot \sum_{e'} \log_2 Q_t^{(e')}(z_{e'}) \\
+  &= -\sum_{e'} \sum_{z_{e'} \in \{0,1\}} Q_t^{(e')}(z_{e'}) \log_2 Q_t^{(e')}(z_{e'})
+     \cdot \underbrace{\prod_{e \neq e'} \sum_{z_e} Q_t^{(e)}(z_e)}_{= 1} \\
+  &= \sum_{e=1}^{m} h(p_e^{(t)}).  \qedhere
+\end{align*}
+\end{proof}
+
+% ====================================================================
+\section{Method 2: Exact (Full Joint Bitmask) Update}
+\label{sec:exact}
+% ====================================================================
+
+\subsection{State Representation}
+
+The exact method maintains the full joint posterior over all $2^m$ states,
+stored as log-probabilities:
+\[
+  \lambda_{\mathbf{z}}^{(t)}
+  = \log P(\mathbf{Z} = \mathbf{z} \mid \mathcal{D}_t),
+  \qquad \mathbf{z} \in \{0,1\}^m.
+\]
+State $\mathbf{z}$ is identified with integer
+$z = \sum_{e=1}^m z_e \cdot 2^{e-1}$, so edge $e$ corresponds to bit
+$e{-}1$ of the index.  The constraint $m \leq 62$ ensures the bitmask
+fits in a 64-bit integer.
+
+\subsection{Prior Construction}
+\label{sec:exact-prior}
+
+Under the independent prior, the log-probability of state $\mathbf{z}$ is:
+\begin{equation}
+  \log P(\mathbf{z})
+  = \sum_{e=1}^{m} \bigl[z_e \log p_e + (1-z_e)\log(1-p_e)\bigr]
+  = \sum_{e=1}^{m}
+    \begin{cases}
+      -\softplus(-\ell_e^{(0)}) & \text{if } z_e = 1, \\[2pt]
+      -\softplus(\ell_e^{(0)})  & \text{if } z_e = 0,
+    \end{cases}
+  \label{eq:exact-prior}
+\end{equation}
+using identities \eqref{eq:logp}--\eqref{eq:log1mp}.
+After construction, the log-posterior is normalized:
+$\lambda_{\mathbf{z}} \gets \lambda_{\mathbf{z}} - \logsumexp_{\mathbf{z}'} \lambda_{\mathbf{z}'}$.
+
+\begin{remark}
+At the prior, the exact and approximate representations are equivalent:
+both encode the same product distribution.  The log-posterior
+\eqref{eq:exact-prior} is identical to the lifted product log-joint
+\eqref{eq:lifted-log} with $t = 0$.
+\end{remark}
+
+\subsection{Observation Update (Bayesian Conditioning)}
+\label{sec:exact-update}
+
+Define the query bitmask $M = \sum_{e:\,q_e=1} 2^{e-1}$.
+
+\paragraph{Likelihood.}
+The observation likelihood for state $\mathbf{z}$ is:
+\begin{equation}
+  P(r \mid \mathbf{Z} = \mathbf{z}, \mathbf{q})
+  = \begin{cases}
+    1 & \text{if } r = 1 \text{ and } (\mathbf{z}\;\mathsf{AND}\; M) \neq 0, \\
+    1 & \text{if } r = 0 \text{ and } (\mathbf{z}\;\mathsf{AND}\; M) = 0, \\
+    0 & \text{otherwise}.
+  \end{cases}
+  \label{eq:likelihood}
+\end{equation}
+In words: collision requires at least one hazardous edge on the path;
+safe requires zero.
+
+\paragraph{Posterior update.}
+By Bayes' theorem:
+\begin{equation}
+  P(\mathbf{z} \mid \mathcal{D}_{t+1})
+  = \frac{P(r^{(t)} \mid \mathbf{z}, \mathbf{q}^{(t)})\, P(\mathbf{z} \mid \mathcal{D}_t)}
+         {P(r^{(t)} \mid \mathbf{q}^{(t)}, \mathcal{D}_t)}.
+  \label{eq:bayes-exact}
+\end{equation}
+Since the likelihood \eqref{eq:likelihood} is 0--1 valued, this reduces
+to zeroing inconsistent states and renormalizing:
+
+\begin{algorithm}[H]
+\caption{Exact observation update}
+\begin{algorithmic}[1]
+\Require log-posterior $\{\lambda_{\mathbf{z}}\}$, query bitmask $M$, outcome $r$
+\For{each state $\mathbf{z} \in \{0,1\}^m$}
+  \State $\text{hit} \gets (\mathbf{z}\;\mathsf{AND}\; M) \neq 0$
+  \If{$(r = 1 \;\wedge\; \neg\text{hit})$ or $(r = 0 \;\wedge\; \text{hit})$}
+    \State $\lambda_{\mathbf{z}} \gets -\infty$ \Comment{$P(\mathbf{z} \mid \mathcal{D}_{t+1}) = 0$}
+  \EndIf
+\EndFor
+\State $c \gets \logsumexp_{\mathbf{z}} \lambda_{\mathbf{z}}$ \Comment{$\log P(r \mid \mathbf{q}, \mathcal{D}_t)$}
+\State $\lambda_{\mathbf{z}} \gets \lambda_{\mathbf{z}} - c$ for all $\mathbf{z}$
+  \Comment{normalize}
+\end{algorithmic}
+\end{algorithm}
+
+The normalizing constant $c$ equals $\log P(r \mid \mathbf{q}, \mathcal{D}_t)$,
+the log-evidence of the observation.  If $c = -\infty$, the observations
+are inconsistent and an error is raised.
+
+\paragraph{Complexity.}
+Each update iterates over all $2^m$ states, so the cost is $O(2^m)$.
+
+\subsection{Derived Quantities}
+
+\subsubsection{Joint Entropy}
+\begin{equation}
+  H_{\text{joint}}^{(t)}
+  = -\sum_{\mathbf{z} \in \{0,1\}^m} P(\mathbf{z} \mid \mathcal{D}_t)\,\log_2 P(\mathbf{z} \mid \mathcal{D}_t)
+  = -\frac{1}{\ln 2}\sum_{\mathbf{z}} e^{\lambda_{\mathbf{z}}^{(t)}} \cdot \lambda_{\mathbf{z}}^{(t)}.
+  \label{eq:joint-entropy}
+\end{equation}
+Terms with $\lambda_{\mathbf{z}} = -\infty$ contribute zero (by the
+convention $0 \cdot (-\infty) = 0$).
+
+\subsubsection{Marginal Probabilities}
+\begin{equation}
+  P(Z_e = 1 \mid \mathcal{D}_t)
+  = \sum_{\mathbf{z}:\, z_e = 1} P(\mathbf{z} \mid \mathcal{D}_t)
+  = \exp\!\Bigl(\logsumexp_{\mathbf{z}:\, z_e = 1} \lambda_{\mathbf{z}}^{(t)}\Bigr).
+  \label{eq:exact-marginal}
+\end{equation}
+
+\subsubsection{Marginal Entropy}
+\begin{equation}
+  H_{\text{marginal}}^{(t)} = \sum_{e=1}^{m} h\!\bigl(P(Z_e = 1 \mid \mathcal{D}_t)\bigr).
+  \label{eq:marginal-entropy}
+\end{equation}
+
+\subsubsection{Predictive Collision Probability}
+For a candidate query $\mathbf{q}$ with bitmask $M$:
+\begin{equation}
+  P(r{=}1 \mid \mathbf{q}, \mathcal{D}_t)
+  = \sum_{\mathbf{z}:\, (\mathbf{z}\,\mathsf{AND}\, M) \neq 0} P(\mathbf{z} \mid \mathcal{D}_t)
+  = \exp\!\Bigl(\logsumexp_{\mathbf{z}:\, (\mathbf{z}\,\mathsf{AND}\, M) \neq 0} \lambda_{\mathbf{z}}^{(t)}\Bigr).
+  \label{eq:pred-collision}
+\end{equation}
+
+\subsubsection{Information Gain}
+
+The exact method supports two entropy measures:
+\begin{equation}
+  \mathrm{IG}_t^{\text{exact}} =
+  \begin{cases}
+    H_{\text{joint}}^{(t)} - H_{\text{joint}}^{(t+1)} & \text{(joint mode)}, \\
+    H_{\text{marginal}}^{(t)} - H_{\text{marginal}}^{(t+1)} & \text{(marginal mode)}.
+  \end{cases}
+  \label{eq:exact-ig}
+\end{equation}
+Joint IG is always non-negative (conditioning never increases Shannon
+entropy).  Marginal IG can in principle be negative (marginal entropies
+can increase even when the joint entropy decreases, though this is rare
+for the exact method).
+
+% ====================================================================
+\section{Relationship Between Joint and Marginal Entropy}
+\label{sec:joint-vs-marginal}
+% ====================================================================
+
+\begin{proposition}[Subadditivity of entropy]
+\label{prop:subadditivity}
+For any joint distribution $P$ on $(Z_1, \dots, Z_m)$:
+\[
+  H(Z_1, \dots, Z_m) \;\leq\; \sum_{e=1}^{m} H(Z_e),
+\]
+with equality if and only if $Z_1, \dots, Z_m$ are mutually independent.
+\end{proposition}
+
+\begin{proof}
+This is a standard result from information theory.  By the chain rule:
+\[
+  H(Z_1, \dots, Z_m) = \sum_{e=1}^{m} H(Z_e \mid Z_1, \dots, Z_{e-1})
+  \leq \sum_{e=1}^{m} H(Z_e),
+\]
+since conditioning reduces entropy: $H(X \mid Y) \leq H(X)$.  Equality
+holds iff each $H(Z_e \mid Z_1, \dots, Z_{e-1}) = H(Z_e)$, which is the
+definition of mutual independence.
+\end{proof}
+
+\paragraph{Consequences.}
+\begin{enumerate}
+  \item \textbf{At the prior}: the edges are independent, so
+    $H_{\text{joint}}^{(0)} = H_{\text{marginal}}^{(0)} = \sum_e h(p_e^{(0)})$.
+  \item \textbf{After safe observations}: safe observations preserve
+    independence (the likelihood factorizes), so
+    $H_{\text{joint}} = H_{\text{marginal}}$ still holds.
+  \item \textbf{After collision observations}: the constraint
+    $\bigvee_{e \in Q} Z_e = 1$ introduces correlations.  Then
+    $H_{\text{joint}} < H_{\text{marginal}}$.  The gap
+    $H_{\text{marginal}} - H_{\text{joint}}$ is the total correlation
+    (multi-information):
+    \begin{equation}
+      \mathrm{TC}(\mathbf{Z} \mid \mathcal{D}_t)
+      = \sum_{e=1}^m H(Z_e \mid \mathcal{D}_t) - H(\mathbf{Z} \mid \mathcal{D}_t)
+      = D_{\mathrm{KL}}\!\bigl(P(\mathbf{Z} \mid \mathcal{D}_t) \;\|\; Q_t\bigr),
+      \label{eq:total-correlation}
+    \end{equation}
+    where $Q_t = \prod_e P(Z_e \mid \mathcal{D}_t)$ is the
+    marginal-product approximation.
+\end{enumerate}
+
+% ====================================================================
+\section{Comparison of Methods}
+\label{sec:comparison}
+% ====================================================================
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lcc@{}}
+\toprule
+                        & \textbf{Approximate}             & \textbf{Exact} \\
+\midrule
+State size              & $O(m)$ log-odds                  & $O(2^m)$ log-probs \\
+Update cost             & $O(m)$ per step                  & $O(2^m)$ per step \\
+Handles correlations    & No (factored)                    & Yes (full joint) \\
+Safe observation        & Exact                            & Exact \\
+Collision marginals     & Exact (for one step)             & Exact \\
+Collision joint         & Approximate (refactored)         & Exact \\
+Joint entropy           & $\sum_e h(p_e)$                  & $-\sum_{\mathbf{z}} P(\mathbf{z})\log_2 P(\mathbf{z})$ \\
+IG always $\geq 0$?    & No (collision can be negative)   & Yes (joint), mostly (marginal) \\
+Edge limit              & None                             & $m \leq 62$ (bitmask) \\
+\bottomrule
+\end{tabular}
+\caption{Summary comparison of the two update methods.}
+\label{tab:comparison}
+\end{table}
+
+\subsection{Entropy Ordering After Observations}
+
+After $T$ observations, the various entropy measures satisfy:
+\begin{equation}
+  H_{\text{exact joint}}^{(T)}
+  \;\leq\;
+  H_{\text{exact marginal}}^{(T)}
+  = H_{\text{approx}}^{(T)} + \Delta_T,
+  \label{eq:entropy-ordering}
+\end{equation}
+where $\Delta_T$ accounts for the difference in marginals between the
+exact and approximate methods.  After only safe observations,
+$\Delta_T = 0$ and all three are equal.  After collision observations,
+the approximate marginals may diverge from exact marginals, and
+the exact joint is strictly less than both marginal sums.
+
+\subsection{Why the Approximate Method Loses Information}
+
+Consider two successive observations:
+\begin{enumerate}
+  \item Query $\mathbf{q}^{(0)}$, observe $r^{(0)} = 1$ (collision).
+        The true posterior $P(\mathbf{Z} \mid r^{(0)} = 1)$ has
+        correlations; the approximate method replaces it with
+        $Q_1 = \prod_e \Ber(\alpha\, p_e)$.
+  \item Query $\mathbf{q}^{(1)}$.  The exact method conditions
+        $P(\mathbf{Z} \mid r^{(0)} = 1)$ on the new observation.
+        The approximate method conditions $Q_1$ instead---a
+        different distribution.
+\end{enumerate}
+The KL divergence $D_{\mathrm{KL}}(P \| Q_1)$ accumulated at step 1
+means the approximate ``prior'' for step 2 is wrong.  This error
+compounds across steps.  In the exact method, no information is
+discarded.
+
+\subsection{Universal Bounds}
+
+For both methods, the cumulative IG satisfies:
+\begin{equation}
+  0 \;\leq\; \sum_{t=0}^{T-1} \mathrm{IG}_t^{(\cdot)} = H_0^{(\cdot)} - H_T^{(\cdot)}
+  \;\leq\; H_0^{(\cdot)}.
+\end{equation}
+When the prior is independent Bernoulli with per-edge probability $p$:
+\[
+  H_0 = m \cdot h(p).
+\]
+For $p = 0.5$: $H_0 = m$ bits (one bit of uncertainty per edge).
+
+\end{document}

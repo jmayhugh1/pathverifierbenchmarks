@@ -80,21 +80,21 @@ TEST_CASE(
 }
 
 TEST_CASE("Benchmarking 5v_6e graph") {
-  runGraphBenchmark("5v_6e", 0.5, 0.5, 20, true);
+  runGraphBenchmark("5v_6e", 0.5, 0.5, 40, true, true, true, true);
 }
 
 TEST_CASE("Benchmarking 7v_13e graph") {
-  runGraphBenchmark("7v_13e", 0.5, 0.5, 40, true, false);
+  runGraphBenchmark("7v_13e", 0.5, 0.5, 40, true, true, true, true);
 }
 
 TEST_CASE("Benchmarking 8v_21e graph") {
-  runGraphBenchmark("8v_21e", 0.5, 0.5, 60, true);
+  runGraphBenchmark("8v_21e", 0.5, 0.5, 40, true, true, true, true);
 }
 
 TEST_CASE("Benchmarking 9v_19e graph") {
-  runGraphBenchmark("9v_19e", 0.5, 0.5, 80, true);
+  runGraphBenchmark("9v_19e", 0.5, 0.5, 40, true, true, true, true);
 }
 
 TEST_CASE("Benchmarking 10v_25e graph") {
-  runGraphBenchmark("10v_25e", 0.5, 0.5, 100, true);
+  runGraphBenchmark("10v_25e", 0.5, 0.5, 40, true, true, true, true);
 }

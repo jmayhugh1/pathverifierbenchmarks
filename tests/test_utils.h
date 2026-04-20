@@ -20,4 +20,5 @@ struct BenchmarkResult {
 /// tests/test_csvs/<graph_name>.csv.
 void runGraphBenchmark(const std::string &graph_name, double prior,
                        double p_query, int iterations, bool csv = false,
-                       bool use_joint_ig = true);
+                       bool use_joint_ig = true,
+                       bool use_connected_paths = false, bool use_cdf = false);

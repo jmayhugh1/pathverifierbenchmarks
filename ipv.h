@@ -26,7 +26,14 @@ class Graph {
   Map map;
   int num_nodes;
   int num_edges;
+  int start_node = -1;
+  int end_node = -1;
   std::vector<std::tuple<size_t, size_t>> edge_pairs;
+  /// Cached simple paths (as edge-index sequences) from start_node to end_node.
+  /// Invalidated when start_node or end_node changes.
+  mutable std::vector<std::vector<size_t>> cached_paths_;
+  mutable bool paths_valid_ = false;
+  void enumeratePaths() const;
   inline static const std::string GRAPH_CONFIGS_PATH = "configs/graphs.json";
   static const nlohmann::json &getGraphConfigs();
 
@@ -36,8 +43,17 @@ public:
         const std::vector<std::tuple<size_t, size_t>> &edge_pairs);
   const Map &getMap() const { return map; }
   void randomlyAssignHazards(double hazard_probability);
+  void randomlyAssignHazards(double hazard_probability, std::mt19937 &rng);
   Path randomPath(std::mt19937 &rng, double p_query = 0.5);
   Path randomPath(double p_query = 0.5);
+  int setStartNode(int start_node);
+  int setEndNode(int end_node);
+  int getStartNode() const { return start_node; }
+  int getEndNode() const { return end_node; }
+  int getNumNodes() const { return num_nodes; }
+  /// Return a uniformly random simple path (as an edge mask) from start_node
+  /// to end_node.  Throws if start/end are unset or no path exists.
+  Path getRandomConnectedPath(std::mt19937 &rng) const;
 };
 
 class ipv {
@@ -76,11 +92,18 @@ class approximateIpv : public ipv {
   std::vector<double> logodds_;
   /// Edge was on a path observed safe; hazard belief stays 0 permanently.
   std::vector<bool> confirmed_safe_;
+  /// When true, informationGain uses jointEntropy(); otherwise marginal
+  /// entropy.
+  bool use_joint_ig_;
 
 public:
   /// Construct with a ground-truth map and a uniform prior hazard probability
   /// per edge (default 0.5).  The prior is converted to log-odds internally.
-  explicit approximateIpv(Map map, double prior = 0.5);
+  /// When @p useJointIG is true, informationGain reports the drop in the
+  /// lifted-product joint entropy; otherwise it uses the sum of marginal
+  /// entropies (numerically identical for a product distribution, but the flag
+  /// keeps the API consistent with exactIpv).
+  explicit approximateIpv(Map map, double prior = 0.5, bool useJointIG = false);
 
   /// Condition the beliefs on a traversal outcome (collision or safe).
   void observe(Path path, bool observed_collision);
@@ -94,6 +117,27 @@ public:
   /// Current marginal hazard probabilities P(Z_i=1) per edge, converted from
   /// internal log-odds representation.
   std::vector<double> marginals() const;
+
+  /// Lifted independent-product joint over all 2^|E| hazard assignments:
+  ///   Q(z) = ∏_i p_i^{z_i} (1-p_i)^{1-z_i}
+  /// where p_i are the current approximate marginals.  Returned in bitmask
+  /// order consistent with exactIpv::posterior().
+  /// Throws if |E| > 62 (bitmask overflow), matching exactIpv's constraint.
+  ///
+  /// NOTE: This is NOT the true correlated posterior.  The approximate update
+  /// treats edges independently, so the best joint representation is the
+  /// product of its marginals.  After a collision observation the true
+  /// posterior has correlations (e.g. "at least one queried edge is hazardous")
+  /// that this factored form cannot capture.
+  std::vector<double> posterior() const;
+
+  /// Joint entropy of the lifted product distribution in bits.
+  /// For an independent-product Q(z) = ∏ Bernoulli(p_i), the joint entropy
+  /// decomposes exactly as H(Q) = Σ H(p_i) — this is the defining property
+  /// of independence.  So this method is numerically equivalent to the
+  /// marginal-sum entropy, but its semantics are "entropy of the full joint"
+  /// for apples-to-apples comparison against exactIpv::jointEntropy().
+  double jointEntropy() const;
 };
 
 /// Full joint over hazard bitmasks Z ∈ {0,1}^{|E|}: eliminate inconsistent

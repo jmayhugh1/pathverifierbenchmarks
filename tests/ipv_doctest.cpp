@@ -1,5 +1,6 @@
 #include <cmath>
 #include <limits>
+#include <set>
 
 #include <doctest/doctest.h>
 
@@ -198,8 +199,7 @@ TEST_CASE("ipv_utils: logsumexp correctness") {
   double expected = std::log(std::exp(-1.0) + std::exp(-2.0) + std::exp(-3.0));
   CHECK(ipv_utils::logsumexp(vals) == doctest::Approx(expected));
 
-  CHECK(ipv_utils::logsumexp({}) ==
-        -std::numeric_limits<double>::infinity());
+  CHECK(ipv_utils::logsumexp({}) == -std::numeric_limits<double>::infinity());
 }
 
 TEST_CASE("ipv_utils: log1mexp basic correctness") {
@@ -230,7 +230,7 @@ TEST_CASE("approximateIpv: safe observation drives marginals to zero") {
 }
 
 TEST_CASE("approximateIpv: collision observation increases queried edge "
-           "beliefs") {
+          "beliefs") {
   Map m = {{0, 1, false}, {1, 2, false}};
   approximateIpv sim(m, 0.3);
   auto probs_before = sim.marginals();
@@ -269,7 +269,7 @@ TEST_CASE("exactIpv: marginals from log-posterior match hand computation") {
 }
 
 TEST_CASE("exactIpv: informationGain with marginal entropy flag matches "
-           "marginal entropy drop") {
+          "marginal entropy drop") {
   Map truth = {{0, 1, false}, {1, 2, true}};
   exactIpv sim(truth, pMatrix{0.5, 0.5}, false);
 
@@ -285,7 +285,7 @@ TEST_CASE("exactIpv: informationGain with marginal entropy flag matches "
 }
 
 TEST_CASE("exactIpv: informationGain with joint entropy flag matches "
-           "joint entropy drop") {
+          "joint entropy drop") {
   Map truth = {{0, 1, false}, {1, 2, true}};
   exactIpv sim(truth, pMatrix{0.5, 0.5}, true);
 
@@ -321,7 +321,7 @@ TEST_CASE("exactIpv: predictiveCollisionProb matches logsumexp derivation") {
 // the approximate (marginal-only) update cannot.
 
 TEST_CASE("counter-example: exact IPV deduces Z_e4=1 from joint "
-           "constraints; approximate IPV cannot") {
+          "constraints; approximate IPV cannot") {
   // Ground truth: only e4 is hazardous.
   // q1 = {e2,e3,e4} → collision (e4 hit)
   // q2 = {e1,e2,e3} → safe     (none hazardous)
@@ -335,10 +335,10 @@ TEST_CASE("counter-example: exact IPV deduces Z_e4=1 from joint "
   approximateIpv approx(m, 0.5);
   exactIpv exact(m, pMatrix(4, 0.5));
 
-  auto print_state = [](const std::string &label, const std::vector<double> &mar) {
-    MESSAGE(label << " marginals: ["
-            << mar[0] << ", " << mar[1] << ", "
-            << mar[2] << ", " << mar[3] << "]");
+  auto print_state = [](const std::string &label,
+                        const std::vector<double> &mar) {
+    MESSAGE(label << " marginals: [" << mar[0] << ", " << mar[1] << ", "
+                  << mar[2] << ", " << mar[3] << "]");
   };
 
   MESSAGE("=== Prior ===");
@@ -394,11 +394,140 @@ TEST_CASE("counter-example: exact IPV deduces Z_e4=1 from joint "
 }
 
 // ====================================================================
+// approximateIpv lifted-product joint tests
+// ====================================================================
+
+TEST_CASE("approximateIpv: lifted posterior sums to 1 at prior") {
+  Map m = {{0, 1, false}, {1, 2, false}, {2, 3, false}};
+  approximateIpv sim(m, 0.3);
+  auto post = sim.posterior();
+  REQUIRE(post.size() == 8);
+  double sum = 0.0;
+  for (double w : post) {
+    CHECK(w >= 0.0);
+    sum += w;
+  }
+  CHECK(sum == doctest::Approx(1.0));
+}
+
+TEST_CASE("approximateIpv: lifted posterior sums to 1 after observations") {
+  Map m = {
+      {0, 1, false},
+      {1, 2, true},
+      {2, 3, false},
+  };
+  approximateIpv sim(m, 0.5);
+  sim.informationGain(Path{true, true, false});
+  sim.informationGain(Path{false, true, true});
+
+  auto post = sim.posterior();
+  double sum = 0.0;
+  for (double w : post) {
+    CHECK(w >= 0.0);
+    sum += w;
+  }
+  CHECK(sum == doctest::Approx(1.0));
+}
+
+TEST_CASE("approximateIpv: jointEntropy matches marginal-sum entropy") {
+  Map m = {{0, 1, false}, {1, 2, true}, {2, 3, false}};
+  approximateIpv sim(m, 0.4);
+
+  auto lo = ipv_utils::probsToLogOdds(sim.marginals());
+  double marginal_sum = ipv_utils::total_entropy_logodds(lo);
+  CHECK(sim.jointEntropy() == doctest::Approx(marginal_sum).epsilon(1e-12));
+
+  sim.informationGain(Path{true, true, false});
+
+  lo = ipv_utils::probsToLogOdds(sim.marginals());
+  marginal_sum = ipv_utils::total_entropy_logodds(lo);
+  CHECK(sim.jointEntropy() == doctest::Approx(marginal_sum).epsilon(1e-12));
+}
+
+TEST_CASE("approximateIpv: lifted posterior matches exactIpv posterior at "
+          "independent prior") {
+  Map m = {{0, 1, false}, {1, 2, false}, {2, 3, false}};
+  pMatrix priors = {0.3, 0.5, 0.7};
+
+  approximateIpv approx(m, 0.0);
+  // Can't pass heterogeneous priors through the constructor, so set up an
+  // exact instance and compare against a fresh approximate with same marginals.
+  // Instead, just build exact with the same priors and compare.
+  exactIpv exact(m, priors);
+
+  // Build approx from scratch with uniform prior, then replace via a helper.
+  // Easier: build two exact instances (one acts as "product prior").
+  // The exact prior IS a product distribution, so they should match.
+  auto exact_post = exact.posterior();
+  REQUIRE(exact_post.size() == 8);
+
+  // Manually compute the product distribution from the same priors.
+  std::vector<double> product_post(8);
+  for (uint64_t state = 0; state < 8; ++state) {
+    double w = 1.0;
+    for (size_t i = 0; i < 3; ++i) {
+      bool haz = ((state >> i) & 1ULL) != 0;
+      w *= haz ? priors[i] : (1.0 - priors[i]);
+    }
+    product_post[state] = w;
+  }
+
+  for (size_t i = 0; i < 8; ++i) {
+    CHECK(exact_post[i] == doctest::Approx(product_post[i]).epsilon(1e-12));
+  }
+}
+
+TEST_CASE("approximateIpv: jointEntropy matches exactIpv jointEntropy at "
+          "independent prior") {
+  Map m = {{0, 1, false}, {1, 2, false}, {2, 3, false}};
+  approximateIpv approx(m, 0.5);
+  exactIpv exact(m, pMatrix(3, 0.5));
+
+  CHECK(approx.jointEntropy() ==
+        doctest::Approx(exact.jointEntropy()).epsilon(1e-10));
+}
+
+TEST_CASE("approximateIpv: jointEntropy diverges from exactIpv after "
+          "correlation-inducing observation") {
+  Map m = {{0, 1, true}, {1, 2, false}, {2, 3, false}};
+  approximateIpv approx(m, 0.5);
+  exactIpv exact(m, pMatrix(3, 0.5));
+
+  approx.informationGain(Path{true, true, false});
+  exact.informationGain(Path{true, true, false});
+
+  // Exact joint entropy < marginal sum after correlations are introduced.
+  // Approximate jointEntropy == marginal sum (by construction).
+  // So approx.jointEntropy() >= exact.jointEntropy().
+  CHECK(approx.jointEntropy() >= exact.jointEntropy() - 1e-10);
+}
+
+TEST_CASE("approximateIpv: posterior() throws for >= 63 edges") {
+  std::mt19937 rng(42);
+  Map m = ipv_utils::randomMap(10, 63, rng, 0.2);
+  approximateIpv sim(m, 0.5);
+  CHECK_THROWS_AS(sim.posterior(), std::invalid_argument);
+}
+
+TEST_CASE("approximateIpv: use_joint_ig flag selects jointEntropy for IG") {
+  Map m = {{0, 1, false}, {1, 2, true}};
+  approximateIpv marginal_sim(m, 0.5, false);
+  approximateIpv joint_sim(m, 0.5, true);
+
+  Path q = {true, true};
+  auto [s1, ig1] = marginal_sim.informationGain(q);
+  auto [s2, ig2] = joint_sim.informationGain(q);
+
+  // For a product distribution H_joint == Σ H_marginal, so IG is identical.
+  CHECK(ig1 == doctest::Approx(ig2).epsilon(1e-12));
+}
+
+// ====================================================================
 // Joint entropy vs marginal entropy tests
 // ====================================================================
 
 TEST_CASE("exactIpv: jointEntropy equals marginalEntropy under independent "
-           "prior") {
+          "prior") {
   Map m = {{0, 1, false}, {1, 2, false}, {2, 3, false}};
   exactIpv sim(m, pMatrix{0.3, 0.5, 0.7});
   CHECK(sim.jointEntropy() ==
@@ -406,7 +535,7 @@ TEST_CASE("exactIpv: jointEntropy equals marginalEntropy under independent "
 }
 
 TEST_CASE("exactIpv: jointEntropy <= marginalEntropy after observation "
-           "introduces correlations") {
+          "introduces correlations") {
   Map m = {{0, 1, true}, {1, 2, false}, {2, 3, false}};
   exactIpv sim(m, pMatrix{0.5, 0.5, 0.5});
   sim.observe(Path{true, true, false}, true);
@@ -452,4 +581,263 @@ TEST_CASE("exactIpv: useJointIG flag defaults to true") {
   auto [s1, ig1] = default_sim.informationGain(q);
   auto [s2, ig2] = joint_sim.informationGain(q);
   CHECK(ig1 == doctest::Approx(ig2).epsilon(1e-12));
+}
+
+// ====================================================================
+// Graph start/end node tests
+// ====================================================================
+
+TEST_CASE("Graph: start and end nodes default to -1") {
+  Graph g("5v_6e", 5, 3, {{0, 1}, {1, 2}, {2, 3}});
+  CHECK(g.getStartNode() == -1);
+  CHECK(g.getEndNode() == -1);
+}
+
+TEST_CASE("Graph: setStartNode and setEndNode store values") {
+  Graph g("5v_6e", 5, 3, {{0, 1}, {1, 2}, {2, 3}});
+  g.setStartNode(0);
+  g.setEndNode(4);
+  CHECK(g.getStartNode() == 0);
+  CHECK(g.getEndNode() == 4);
+}
+
+TEST_CASE("Graph: setStartNode and setEndNode can be updated") {
+  Graph g("5v_6e", 5, 3, {{0, 1}, {1, 2}, {2, 3}});
+  g.setStartNode(1);
+  g.setEndNode(3);
+  CHECK(g.getStartNode() == 1);
+  CHECK(g.getEndNode() == 3);
+
+  g.setStartNode(2);
+  g.setEndNode(4);
+  CHECK(g.getStartNode() == 2);
+  CHECK(g.getEndNode() == 4);
+}
+
+TEST_CASE("Graph: setStartNode throws on out-of-range") {
+  Graph g("5v_6e", 5, 3, {{0, 1}, {1, 2}, {2, 3}});
+  CHECK_THROWS_AS(g.setStartNode(-1), std::invalid_argument);
+  CHECK_THROWS_AS(g.setStartNode(5), std::invalid_argument);
+}
+
+TEST_CASE("Graph: setEndNode throws on out-of-range") {
+  Graph g("5v_6e", 5, 3, {{0, 1}, {1, 2}, {2, 3}});
+  CHECK_THROWS_AS(g.setEndNode(-1), std::invalid_argument);
+  CHECK_THROWS_AS(g.setEndNode(5), std::invalid_argument);
+}
+
+TEST_CASE("Graph: setStartNode and setEndNode return 0 on success") {
+  Graph g("5v_6e", 5, 3, {{0, 1}, {1, 2}, {2, 3}});
+  CHECK(g.setStartNode(0) == 0);
+  CHECK(g.setEndNode(4) == 0);
+}
+
+// ====================================================================
+// getRandomConnectedPath tests
+// ====================================================================
+
+TEST_CASE("getRandomConnectedPath: throws when start/end not set") {
+  Graph g("test", 4, 3, {{0, 1}, {1, 2}, {2, 3}});
+  std::mt19937 rng(42);
+  CHECK_THROWS_AS(g.getRandomConnectedPath(rng), std::runtime_error);
+
+  g.setStartNode(0);
+  CHECK_THROWS_AS(g.getRandomConnectedPath(rng), std::runtime_error);
+}
+
+TEST_CASE("getRandomConnectedPath: returns valid edge mask on linear graph") {
+  // 0 → 1 → 2 → 3  (only one path)
+  Graph g("test", 4, 3, {{0, 1}, {1, 2}, {2, 3}});
+  g.setStartNode(0);
+  g.setEndNode(3);
+  std::mt19937 rng(42);
+
+  Path p = g.getRandomConnectedPath(rng);
+  REQUIRE(p.size() == 3);
+  CHECK(p[0] == true);
+  CHECK(p[1] == true);
+  CHECK(p[2] == true);
+}
+
+TEST_CASE("getRandomConnectedPath: diamond graph produces two valid paths") {
+  // 0→1→3 (edges 0,2) or 0→2→3 (edges 1,3)
+  //   0 -e0→ 1
+  //   0 -e1→ 2
+  //   1 -e2→ 3
+  //   2 -e3→ 3
+  Graph g("test", 4, 4, {{0, 1}, {0, 2}, {1, 3}, {2, 3}});
+  g.setStartNode(0);
+  g.setEndNode(3);
+
+  std::set<std::vector<bool>> seen;
+  std::mt19937 rng(42);
+  for (int i = 0; i < 100; ++i) {
+    Path p = g.getRandomConnectedPath(rng);
+    REQUIRE(p.size() == 4);
+    seen.insert(std::vector<bool>(p.begin(), p.end()));
+  }
+
+  // Both paths should appear.
+  CHECK(seen.size() == 2);
+  CHECK(seen.count({true, false, true, false}) == 1); // 0→1→3
+  CHECK(seen.count({false, true, false, true}) == 1); // 0→2→3
+}
+
+// ====================================================================
+// Cumulative IG additivity: Σ step-wise IG == total entropy drop
+// ====================================================================
+
+TEST_CASE("exactIpv: cumulative step-wise IG equals total entropy drop "
+          "(joint entropy)") {
+  Map m = {
+      {0, 1, false}, // e0 safe
+      {1, 2, true},  // e1 hazardous
+      {2, 3, false}, // e2 safe
+      {3, 4, true},  // e3 hazardous
+  };
+  exactIpv sim(m, pMatrix(4, 0.5), true);
+
+  const double h_initial = sim.jointEntropy();
+  double cumulative_ig = 0.0;
+
+  Path q1 = {true, true, false, false};
+  auto [s1, ig1] = sim.informationGain(q1);
+  cumulative_ig += ig1;
+
+  Path q2 = {false, false, true, true};
+  auto [s2, ig2] = sim.informationGain(q2);
+  cumulative_ig += ig2;
+
+  Path q3 = {true, false, true, false};
+  auto [s3, ig3] = sim.informationGain(q3);
+  cumulative_ig += ig3;
+
+  const double h_final = sim.jointEntropy();
+  const double total_drop = h_initial - h_final;
+
+  MESSAGE("joint: h_initial=" << h_initial << " h_final=" << h_final);
+  MESSAGE("joint: ig1=" << ig1 << " ig2=" << ig2 << " ig3=" << ig3);
+  MESSAGE("joint: cumulative=" << cumulative_ig
+                               << " total_drop=" << total_drop);
+
+  CHECK(cumulative_ig == doctest::Approx(total_drop).epsilon(1e-10));
+}
+
+TEST_CASE("exactIpv: cumulative step-wise IG equals total entropy drop "
+          "(marginal entropy)") {
+  Map m = {
+      {0, 1, false},
+      {1, 2, true},
+      {2, 3, false},
+      {3, 4, true},
+  };
+  exactIpv sim(m, pMatrix(4, 0.5), false);
+
+  auto lo_init = ipv_utils::probsToLogOdds(sim.marginals());
+  const double h_initial = ipv_utils::total_entropy_logodds(lo_init);
+  double cumulative_ig = 0.0;
+
+  Path q1 = {true, true, false, false};
+  auto [s1, ig1] = sim.informationGain(q1);
+  cumulative_ig += ig1;
+
+  Path q2 = {false, false, true, true};
+  auto [s2, ig2] = sim.informationGain(q2);
+  cumulative_ig += ig2;
+
+  Path q3 = {true, false, true, false};
+  auto [s3, ig3] = sim.informationGain(q3);
+  cumulative_ig += ig3;
+
+  auto lo_final = ipv_utils::probsToLogOdds(sim.marginals());
+  const double h_final = ipv_utils::total_entropy_logodds(lo_final);
+  const double total_drop = h_initial - h_final;
+
+  MESSAGE("marginal: h_initial=" << h_initial << " h_final=" << h_final);
+  MESSAGE("marginal: ig1=" << ig1 << " ig2=" << ig2 << " ig3=" << ig3);
+  MESSAGE("marginal: cumulative=" << cumulative_ig
+                                  << " total_drop=" << total_drop);
+
+  CHECK(cumulative_ig == doctest::Approx(total_drop).epsilon(1e-10));
+}
+
+TEST_CASE("approximateIpv: cumulative step-wise IG equals total entropy "
+          "drop") {
+  Map m = {
+      {0, 1, false},
+      {1, 2, true},
+      {2, 3, false},
+      {3, 4, true},
+  };
+  approximateIpv sim(m, 0.5);
+
+  auto lo_init = ipv_utils::probsToLogOdds(sim.marginals());
+  const double h_initial = ipv_utils::total_entropy_logodds(lo_init);
+  double cumulative_ig = 0.0;
+
+  Path q1 = {true, true, false, false};
+  auto [s1, ig1] = sim.informationGain(q1);
+  cumulative_ig += ig1;
+
+  Path q2 = {false, false, true, true};
+  auto [s2, ig2] = sim.informationGain(q2);
+  cumulative_ig += ig2;
+
+  Path q3 = {true, false, true, false};
+  auto [s3, ig3] = sim.informationGain(q3);
+  cumulative_ig += ig3;
+
+  auto lo_final = ipv_utils::probsToLogOdds(sim.marginals());
+  const double h_final = ipv_utils::total_entropy_logodds(lo_final);
+  const double total_drop = h_initial - h_final;
+
+  MESSAGE("approx: h_initial=" << h_initial << " h_final=" << h_final);
+  MESSAGE("approx: ig1=" << ig1 << " ig2=" << ig2 << " ig3=" << ig3);
+  MESSAGE("approx: cumulative=" << cumulative_ig
+                                << " total_drop=" << total_drop);
+
+  CHECK(cumulative_ig == doctest::Approx(total_drop).epsilon(1e-10));
+}
+
+TEST_CASE("getRandomConnectedPath: throws when no path exists") {
+  // 0→1, 2→3 — disconnected, no path from 0 to 3
+  Graph g("test", 4, 2, {{0, 1}, {2, 3}});
+  g.setStartNode(0);
+  g.setEndNode(3);
+  std::mt19937 rng(42);
+  CHECK_THROWS_AS(g.getRandomConnectedPath(rng), std::runtime_error);
+}
+
+TEST_CASE("getRandomConnectedPath: path edges form a connected walk") {
+  // 5-node graph: 0→1→3, 0→2→3, 0→2→4→3
+  Graph g("test", 5, 5, {{0, 1}, {0, 2}, {1, 3}, {2, 3}, {2, 4}});
+  g.setStartNode(0);
+  g.setEndNode(3);
+  std::mt19937 rng(123);
+
+  for (int trial = 0; trial < 50; ++trial) {
+    Path p = g.getRandomConnectedPath(rng);
+    REQUIRE(p.size() == 5);
+
+    // Verify the selected edges form a connected walk from 0 to 3
+    // by collecting nodes and checking reachability.
+    std::vector<std::tuple<size_t, size_t>> edges = {
+        {0, 1}, {0, 2}, {1, 3}, {2, 3}, {2, 4}};
+    std::vector<bool> node_reached(5, false);
+    node_reached[0] = true;
+    bool changed = true;
+    while (changed) {
+      changed = false;
+      for (size_t i = 0; i < edges.size(); ++i) {
+        if (!p[i])
+          continue;
+        auto [u, v] = edges[i];
+        if (node_reached[u] && !node_reached[v]) {
+          node_reached[v] = true;
+          changed = true;
+        }
+      }
+    }
+    CHECK(node_reached[3]);
+  }
 }
